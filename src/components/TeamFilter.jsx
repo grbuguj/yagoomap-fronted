@@ -1,5 +1,3 @@
-import { useState } from 'react'
-
 const TEAMS = [
     { name: 'LG 트윈스', color: '#C30452', available: true },
     { name: 'KIA 타이거즈', color: '#EA0029', available: false },
@@ -13,16 +11,14 @@ const TEAMS = [
     { name: '키움 히어로즈', color: '#820024', available: false },
 ]
 
-function TeamFilter() {
-    const [selectedTeam, setSelectedTeam] = useState('LG 트윈스')
-
+function TeamFilter({ selectedTeam, onSelectTeam }) {
     return (
         <div>
             {TEAMS.map((team) => (
                 <button
                     key={team.name}
                     disabled={!team.available}
-                    onClick={() => setSelectedTeam(team.name)}
+                    onClick={() => onSelectTeam(team.name)}
                     style={{
                         backgroundColor: selectedTeam === team.name ? team.color : '',
                         color: selectedTeam === team.name ? 'white' : '',

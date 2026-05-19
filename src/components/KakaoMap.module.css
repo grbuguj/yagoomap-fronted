@@ -1,0 +1,58 @@
+.mapContainer {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+}
+
+/* 커스텀 마커 - 전역 스타일 (index.css에 없으므로 여기서 :global 사용) */
+:global(.yamap-marker) {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+:global(.yamap-pin) {
+  width: 40px;
+  height: 40px;
+  background: #C30452;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 3px 10px rgba(195, 4, 82, 0.4);
+  border: 2px solid #fff;
+  transition: transform 0.15s;
+}
+
+:global(.yamap-pin:hover) {
+  transform: rotate(-45deg) scale(1.15);
+}
+
+:global(.yamap-pin span),
+:global(.yamap-pin) {
+  font-size: 18px;
+  transform: rotate(45deg);
+}
+
+:global(.yamap-label) {
+  margin-top: 4px;
+  background: rgba(0,0,0,0.75);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 7px;
+  border-radius: 10px;
+  white-space: nowrap;
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  backdrop-filter: blur(4px);
+}

@@ -1,0 +1,57 @@
+.wrapper {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+.searchBox {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #f4f4f6;
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+
+.searchIcon {
+  font-size: 15px;
+  opacity: 0.5;
+}
+
+.input {
+  flex: 1;
+  background: none;
+  font-size: 14px;
+  color: #999;
+  cursor: pointer;
+}
+
+.filterBtn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 10px 14px;
+  background: #f4f4f6;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  white-space: nowrap;
+  position: relative;
+  cursor: pointer;
+}
+
+.filterDot {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 7px;
+  height: 7px;
+  background: #C30452;
+  border-radius: 50%;
+  border: 1.5px solid #f4f4f6;
+}

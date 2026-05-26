@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { createPortal } from 'react-dom'
 import { TEAM_CONFIG } from '../data/teams'
 import ReviewSection from './ReviewSection'
 import styles from './VenueDetail.module.css'
-
 
 function Stars({ rating }) {
   const full  = Math.floor(rating)
@@ -16,77 +16,215 @@ function Stars({ rating }) {
   )
 }
 
-function VenueDetail({ venue, onClose }) {
-  const [reviewCount, setReviewCount] = useState(venue?.reviewCount ?? 0)
+/* ── 라이트박스 모달 ────────────────────────────────────── */
+function Lightbox({ images, index, onClose, onPrev, onNext }) {
+  // 키보드 ← → Esc
+  useEffect(() => {
+    const handler = (e) => {
+      if (e.key === 'ArrowLeft')  onPrev()
+      if (e.key === 'ArrowRight') onNext()
+      if (e.key === 'Escape')     onClose()
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [onPrev, onNext, onClose])
+
+  return (
+    <div className={styles.lightbox} onClick={onClose}>
+      {/* 닫기 */}
+      <button className={styles.lightboxClose} onClick={onClose}>✕</button>
+
+      {/* 이전 */}
+      <button
+        className={`${styles.lightboxNav} ${styles.lightboxPrev}`}
+        onClick={e => { e.stopPropagation(); onPrev() }}
+        disabled={index === 0}
+      >‹</button>
+
+      {/* 이미지 */}
+      <img
+        src={images[index]?.link || images[index]?.thumbnail}
+        alt={`이미지 ${index + 1}`}
+        className={styles.lightboxImg}
+        onClick={e => e.stopPropagation()}
+      />
+
+      {/* 다음 */}
+      <button
+        className={`${styles.lightboxNav} ${styles.lightboxNext}`}
+        onClick={e => { e.stopPropagation(); onNext() }}
+        disabled={index === images.length - 1}
+      >›</button>
+
+      {/* 하단 도트 */}
+      <div className={styles.lightboxDots} onClick={e => e.stopPropagation()}>
+        {images.map((_, i) => (
+          <button
+            key={i}
+            className={`${styles.lightboxDot} ${i === index ? styles.lightboxDotActive : ''}`}
+            onClick={() => {}} // controlled by parent
+          />
+        ))}
+      </div>
+
+      {/* 카운터 */}
+      <span className={styles.lightboxCounter}>{index + 1} / {images.length}</span>
+    </div>
+  )
+}
+
+/* ── VenueDetail ────────────────────────────────────────── */
+function VenueDetail({ venue, onClose, onCloseAll }) {
+  const [reviewCount,  setReviewCount]  = useState(venue?.reviewCount ?? 0)
+  const [venueImgs,    setVenueImgs]    = useState([])
+  const [imgLoading,   setImgLoading]   = useState(true)
+  const [lightboxIdx,  setLightboxIdx]  = useState(null) // null=닫힘
+
+  // 이미지 5장 fetch
+  useEffect(() => {
+    if (!venue?.name) return
+    setImgLoading(true)
+    setVenueImgs([])
+    fetch(`/api/images?query=${encodeURIComponent(venue.name)}`)
+      .then(r => r.ok ? r.json() : [])
+      .then(items => {
+        setVenueImgs(items?.slice(0, 5) ?? [])
+        setImgLoading(false)
+      })
+      .catch(() => setImgLoading(false))
+  }, [venue?.name])
+
+  const openLightbox  = useCallback((i) => setLightboxIdx(i), [])
+  const closeLightbox = useCallback(() => setLightboxIdx(null), [])
+  const prevImage     = useCallback(() => setLightboxIdx(i => Math.max(0, i - 1)), [])
+  const nextImage     = useCallback(() => setLightboxIdx(i => Math.min(venueImgs.length - 1, i + 1)), [venueImgs.length])
 
   if (!venue) return null
 
-  const teamCfg = TEAM_CONFIG[venue.team]
+  const teamCfg   = TEAM_CONFIG[venue.team]
   const teamColor = teamCfg?.color || 'var(--clr-primary)'
 
-  const handleKakaoMap = () => {
+  const handleKakaoMap = () =>
     window.open(`https://map.kakao.com/link/search/${encodeURIComponent(venue.name)}`, '_blank')
-  }
-
-  const handleNaverMap = () => {
+  const handleNaverMap = () =>
     window.open(`https://map.naver.com/v5/search/${encodeURIComponent(venue.name)}`, '_blank')
-  }
+
+  const hasImgs = venueImgs.length > 0
 
   return (
     <div className={styles.wrap}>
-      {/* 뒤로가기 */}
-      <button className={styles.back} onClick={onClose}>
-        ← 목록으로
-      </button>
+      {/* 상단 네비바 */}
+      <div className={styles.navBar}>
+        <button className={styles.navBtn} onClick={onClose} aria-label="뒤로가기">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <button className={styles.navBtn} onClick={onCloseAll ?? onClose} aria-label="닫기">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
 
-      {/* 이미지 영역 */}
-      <div className={styles.imgArea} style={{ background: teamColor + '15' }}>
-        <span className={styles.imgPlaceholder} style={{ color: teamColor }}>🍻</span>
-        <span className={styles.teamBadge} style={{ background: teamColor }}>
-          {teamCfg?.shortName || venue.team}
-        </span>
+      {/* 이미지 갤러리 영역 */}
+      <div className={styles.imgArea} style={{ background: hasImgs ? '#111' : teamColor + '15' }}>
+        {hasImgs ? (
+          <div className={styles.gallery}>
+            <button className={styles.galleryMain} onClick={() => openLightbox(0)}>
+              <img src={venueImgs[0].link || venueImgs[0].thumbnail} alt={venue.name} />
+            </button>
+            <div className={styles.galleryGrid}>
+              {[1, 2, 3, 4].map(i => (
+                <button
+                  key={i}
+                  className={styles.galleryThumb}
+                  onClick={() => venueImgs[i] && openLightbox(i)}
+                  style={{ background: teamColor + '20' }}
+                >
+                  {venueImgs[i] ? (
+                    <img src={venueImgs[i].link || venueImgs[i].thumbnail} alt={`${venue.name} ${i + 1}`} />
+                  ) : null}
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <span
+            className={`${styles.imgPlaceholder} ${imgLoading ? styles.imgPlaceholderLoading : ''}`}
+            style={{ color: teamColor }}
+          >
+            🍻
+          </span>
+        )}
       </div>
 
       {/* 기본 정보 */}
       <div className={styles.body}>
-        <h2 className={styles.name}>{venue.name}</h2>
-        <p className={styles.station}>{venue.nearStation}</p>
-        <p className={styles.address}>{venue.address}</p>
-
-        {/* 별점 */}
-        <div className={styles.ratingRow}>
-          <Stars rating={venue.rating} />
-          <span className={styles.reviewCount}>리뷰 {reviewCount}개</span>
+        <div className={styles.nameRow}>
+          <h2 className={styles.name}>{venue.name}</h2>
+          <span className={styles.teamBadge} style={{ background: teamColor }}>
+            {teamCfg?.shortName || venue.team}
+          </span>
         </div>
 
-        {/* 안내 문구 */}
+        <div className={styles.infoRows}>
+          <span className={styles.infoRow}>
+            <svg className={styles.infoIcon} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 13-8 13S4 15.25 4 10a8 8 0 0 1 8-8z"/>
+            </svg>
+            {venue.nearStation}
+          </span>
+          <span className={styles.infoRow}>
+            <svg className={styles.infoIcon} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
+            </svg>
+            {venue.address}
+          </span>
+        </div>
+
+        <div className={styles.ratingRow}>
+          <Stars rating={venue.rating} />
+          <span className={styles.reviewCount}>· 리뷰 {reviewCount}개</span>
+        </div>
+
+        <div className={styles.btnRow}>
+          <button className={`${styles.mapBtn} ${styles.mapBtnKakao}`} onClick={handleKakaoMap}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 3C6.477 3 2 6.925 2 11.785c0 3.018 1.677 5.684 4.236 7.348l-.978 3.643a.25.25 0 0 0 .373.279L9.93 20.59A11.1 11.1 0 0 0 12 20.57c5.523 0 10-3.925 10-8.785S17.523 3 12 3"/>
+            </svg>
+            카카오맵
+          </button>
+          <button className={`${styles.mapBtn} ${styles.mapBtnNaver}`} onClick={handleNaverMap}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M16.273 12.845 7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/>
+            </svg>
+            네이버맵
+          </button>
+        </div>
+
         <p className={styles.notice}>
           📞 정확한 중계 여부는 가게에 전화로 확인하세요
         </p>
-
-        {/* 지도 연결 버튼 */}
-        <div className={styles.btnRow}>
-          <button className={`${styles.mapBtn} ${styles.mapBtnKakao}`} onClick={handleKakaoMap}>
-            <span className={styles.mapIcon}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 3C6.477 3 2 6.925 2 11.785c0 3.018 1.677 5.684 4.236 7.348l-.978 3.643a.25.25 0 0 0 .373.279L9.93 20.59A11.1 11.1 0 0 0 12 20.57c5.523 0 10-3.925 10-8.785S17.523 3 12 3"/>
-              </svg>
-            </span>
-            카카오맵 연결
-          </button>
-          <button className={`${styles.mapBtn} ${styles.mapBtnNaver}`} onClick={handleNaverMap}>
-            <span className={styles.mapIcon}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M16.273 12.845 7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/>
-              </svg>
-            </span>
-            네이버맵 연결
-          </button>
-        </div>
       </div>
+
+      <div className={styles.divider} />
 
       {/* 리뷰 섹션 */}
       <ReviewSection venueId={venue.id} onCountChange={setReviewCount} />
+
+      {/* 라이트박스 — portal로 body에 직접 렌더링 (z-index 스태킹 컨텍스트 탈출) */}
+      {lightboxIdx !== null && createPortal(
+        <Lightbox
+          images={venueImgs}
+          index={lightboxIdx}
+          onClose={closeLightbox}
+          onPrev={prevImage}
+          onNext={nextImage}
+        />,
+        document.body
+      )}
     </div>
   )
 }

@@ -1,7 +1,7 @@
-import { useState, useMemo, useCallback, useRef } from 'react'
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import Header        from './components/Header'
 import SearchBar     from './components/SearchBar'
-import TeamFilter    from './components/TeamFilter'
+import TeamSelector  from './components/TeamSelector'
 import VenueList     from './components/VenueList'
 import VenueDetail   from './components/VenueDetail'
 import KakaoMap      from './components/KakaoMap'
@@ -13,43 +13,66 @@ import { AVAILABLE_TEAMS } from './data/teams'
 import './App.css'
 
 function App() {
-  const [selectedTeam,  setSelectedTeam]  = useState('LG 트윈스')
-  const [keyword,       setKeyword]       = useState('')
-  const [selectedVenue, setSelectedVenue] = useState(null)
-  const [showReport,    setShowReport]    = useState(false)
-  const [sidebarOpen,   setSidebarOpen]   = useState(() => window.innerWidth > 480)
-  const [policyType,    setPolicyType]    = useState(null) // 'privacy' | 'terms' | null
-  const [userLocation,  setUserLocation]  = useState(null)
-  const [locating,      setLocating]      = useState(false)
-  const [mapMoved,      setMapMoved]      = useState(false)
-  const liveBoundsRef  = useRef(null)   // 최신 지도 bounds (plain object)
-  const [boundsFilter, setBoundsFilter]  = useState(null)  // 재검색 시 스냅샷
+  // 초기값: 전체 가용 팀 선택됨
+  const [selectedTeams,    setSelectedTeams]    = useState([...AVAILABLE_TEAMS])
+  const [showTeamSelector, setShowTeamSelector] = useState(true)
+  const [keyword,          setKeyword]          = useState('')
+  const [selectedVenue,    setSelectedVenue]    = useState(null)
+  const [showReport,       setShowReport]       = useState(false)
+  const [sidebarOpen,      setSidebarOpen]      = useState(() => window.innerWidth > 480)
+  const [policyType,       setPolicyType]       = useState(null)
+  const [userLocation,     setUserLocation]     = useState(null)
+  const [locating,         setLocating]         = useState(false)
+  const [mapMoved,         setMapMoved]         = useState(false)
+  const liveBoundsRef  = useRef(null)
+  const [boundsFilter, setBoundsFilter] = useState(null)
 
-  // 바텀시트 스와이프 제스처
-  const swipeTouchY    = useRef(0)      // 터치 시작 Y
-  const swipeScrollTop = useRef(0)      // 터치 시작 시점의 sidebarBody 스크롤 위치
-  const sidebarBodyRef = useRef(null)   // sidebarBody DOM 참조
+  const swipeTouchY    = useRef(0)
+  const swipeScrollTop = useRef(0)
+  const sidebarBodyRef = useRef(null)
 
-  // 전체 or 준비된 팀 선택 시 true
-  const isAvailable = selectedTeam === '전체' || AVAILABLE_TEAMS.includes(selectedTeam)
+  const isAvailable = selectedTeams.some(t => AVAILABLE_TEAMS.includes(t))
 
-  const handleTeamChange = useCallback((team) => {
-    setSelectedTeam(team)
+  // ── 팀 토글 ──────────────────────────────────────────────
+  const handleTeamToggle = useCallback((teamKey) => {
+    setSelectedTeams(prev => {
+      if (prev.includes(teamKey)) return prev.filter(t => t !== teamKey)
+      return [...prev, teamKey]
+    })
+  }, [])
+
+  const handleTeamClearAll = useCallback(() => {
+    setSelectedTeams([])
+  }, [])
+
+  const handleShowSelector  = useCallback(() => {
+    setShowTeamSelector(true)
     setSelectedVenue(null)
+  }, [])
+
+  const handleHideSelector = useCallback(() => {
+    setShowTeamSelector(false)
     setKeyword('')
-    setBoundsFilter(null)   // 팀 바꾸면 bounds 필터 초기화
+    setBoundsFilter(null)
     setMapMoved(false)
   }, [])
 
+  // ── 가게 선택 / 닫기 ─────────────────────────────────────
   const handleVenueSelect = useCallback((venue) => {
     setSelectedVenue(venue)
-    setSidebarOpen(true)   // 마커 클릭 시 사이드바 자동 오픈
+    setSidebarOpen(true)
   }, [])
 
   const handleVenueClose = useCallback(() => {
     setSelectedVenue(null)
   }, [])
 
+  const handleVenueCloseAll = useCallback(() => {
+    setSelectedVenue(null)
+    setSidebarOpen(false)
+  }, [])
+
+  // ── 지도 bounds / 재검색 ──────────────────────────────────
   const handleBoundsChange = useCallback((bounds) => {
     liveBoundsRef.current = bounds
     setMapMoved(true)
@@ -60,18 +83,17 @@ function App() {
     setMapMoved(false)
   }, [])
 
-  // ── 바텀시트 핸들 스와이프 ──────────────────────────────
+  // ── 바텀시트 스와이프 ────────────────────────────────────
   const onHandleTouchStart = useCallback((e) => {
     swipeTouchY.current = e.touches[0].clientY
   }, [])
 
   const onHandleTouchEnd = useCallback((e) => {
     const dy = e.changedTouches[0].clientY - swipeTouchY.current
-    if      (dy >  40) setSidebarOpen(false)  // 아래로 → 닫기
-    else if (dy < -40) setSidebarOpen(true)   // 위로  → 열기
+    if      (dy >  40) setSidebarOpen(false)
+    else if (dy < -40) setSidebarOpen(true)
   }, [])
 
-  // ── 컨텐츠 영역: 맨 위에서 아래로 스와이프 → 닫기 ──────
   const onBodyTouchStart = useCallback((e) => {
     swipeTouchY.current    = e.touches[0].clientY
     swipeScrollTop.current = sidebarBodyRef.current?.scrollTop ?? 0
@@ -79,10 +101,17 @@ function App() {
 
   const onBodyTouchEnd = useCallback((e) => {
     const dy = e.changedTouches[0].clientY - swipeTouchY.current
-    // 스크롤이 맨 위이고 아래로 60px 이상 → 닫기
-    if (dy > 60 && swipeScrollTop.current === 0) {
-      setSidebarOpen(false)
-    }
+    if (dy > 60 && swipeScrollTop.current === 0) setSidebarOpen(false)
+  }, [])
+
+  // ── 앱 시작 시 위치 요청 ─────────────────────────────────
+  useEffect(() => {
+    if (!navigator.geolocation) return
+    navigator.geolocation.getCurrentPosition(
+      (pos) => setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }),
+      () => {},
+      { timeout: 8000, maximumAge: 60000 }
+    )
   }, [])
 
   const handleLocate = useCallback(() => {
@@ -92,24 +121,17 @@ function App() {
     }
     setLocating(true)
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude })
-        setLocating(false)
-      },
-      () => {
-        alert('위치 정보를 가져올 수 없어요.\n위치 권한을 허용해주세요.')
-        setLocating(false)
-      },
+      (pos) => { setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude }); setLocating(false) },
+      () => { alert('위치 정보를 가져올 수 없어요.\n위치 권한을 허용해주세요.'); setLocating(false) },
       { timeout: 8000, maximumAge: 60000 }
     )
   }, [])
 
+  // ── 필터링 ───────────────────────────────────────────────
   const filteredVenues = useMemo(() => {
     if (!isAvailable) return []
-    // 전체: 준비된 팀 전체 / 특정 팀: 해당 팀만
-    let list = selectedTeam === '전체'
-      ? VENUES.filter(v => AVAILABLE_TEAMS.includes(v.team))
-      : VENUES.filter(v => v.team === selectedTeam)
+    // 빈 배열 = 전체(가용 팀), 아니면 선택 팀만
+    let list = VENUES.filter(v => selectedTeams.includes(v.team) && AVAILABLE_TEAMS.includes(v.team))
     if (keyword.trim()) {
       const kw = keyword.trim().toLowerCase()
       list = list.filter(v =>
@@ -117,7 +139,6 @@ function App() {
         v.address.toLowerCase().includes(kw)
       )
     }
-    // 지역 재검색 bounds 필터
     if (boundsFilter) {
       list = list.filter(v =>
         v.lat >= boundsFilter.swLat && v.lat <= boundsFilter.neLat &&
@@ -125,16 +146,17 @@ function App() {
       )
     }
     return list
-  }, [selectedTeam, isAvailable, keyword, boundsFilter])
+  }, [selectedTeams, isAvailable, keyword, boundsFilter])
+
+  // KakaoMap에 넘길 단일 팀값 (첫 번째 선택 팀 or null)
+  const primaryTeam = selectedTeams.length === 1 ? selectedTeams[0] : null
 
   return (
     <div className="app">
       <Header onReport={() => setShowReport(true)} />
 
       <div className={`content${sidebarOpen ? '' : ' content--closed'}`}>
-        {/* ── 사이드바 래퍼 ── */}
         <div className={`sidebarWrap${sidebarOpen ? '' : ' sidebarWrap--closed'}`}>
-          {/* 모바일 전용 드래그 핸들 (데스크톱에선 display:none) */}
           <button
             className="sidebarHandle"
             onClick={() => setSidebarOpen(o => !o)}
@@ -143,16 +165,14 @@ function App() {
           >
             <span className="sidebarHandleBar" />
           </button>
+
           <aside className="sidebar">
-            {/* 모바일 디테일 뷰에서는 검색/팀필터 숨김 */}
-            <div className={`sidebarTop${selectedVenue ? ' sidebarTop--detailMode' : ''}`}>
-              <SearchBar
-                value={keyword}
-                onChange={setKeyword}
-                disabled={!isAvailable}
-              />
-              <TeamFilter selected={selectedTeam} onSelect={handleTeamChange} />
-            </div>
+            {/* 검색바: 목록 뷰에서만 */}
+            {!showTeamSelector && !selectedVenue && (
+              <div className="sidebarTop">
+                <SearchBar value={keyword} onChange={setKeyword} />
+              </div>
+            )}
 
             <div
               className="sidebarBody"
@@ -160,20 +180,25 @@ function App() {
               onTouchStart={onBodyTouchStart}
               onTouchEnd={onBodyTouchEnd}
             >
-              {!isAvailable ? (
-                <div className="comingSoon">
-                  <span>⚾</span>
-                  <p>{selectedTeam}</p>
-                  <small>준비 중이에요!</small>
-                  <small>곧 오픈할게요 🙏</small>
-                </div>
-              ) : selectedVenue ? (
-                <VenueDetail key={selectedVenue.id} venue={selectedVenue} onClose={handleVenueClose} />
+              {selectedVenue ? (
+                <VenueDetail
+                  key={selectedVenue.id}
+                  venue={selectedVenue}
+                  onClose={handleVenueClose}
+                  onCloseAll={handleVenueCloseAll}
+                />
+              ) : showTeamSelector ? (
+                <TeamSelector
+                  selectedTeams={selectedTeams}
+                  onToggle={handleTeamToggle}
+                  onConfirm={handleHideSelector}
+                />
               ) : (
                 <VenueList
                   venues={filteredVenues}
-                  selectedTeam={selectedTeam}
+                  selectedTeams={selectedTeams}
                   onSelect={handleVenueSelect}
+                  onOpenSelector={handleShowSelector}
                 />
               )}
             </div>
@@ -182,7 +207,6 @@ function App() {
           </aside>
         </div>
 
-        {/* ── 사이드바 토글 탭 (사이드바 바깥, 네이버맵 스타일) ── */}
         <button
           className="sidebarToggle"
           onClick={() => setSidebarOpen(o => !o)}
@@ -191,7 +215,6 @@ function App() {
           {sidebarOpen ? '‹' : '›'}
         </button>
 
-        {/* ── 지도 영역 ── */}
         <div className="mapArea">
           <button
             className={`reSearchBtn${mapMoved ? ' reSearchBtn--visible' : ''}`}
@@ -202,14 +225,13 @@ function App() {
 
           <KakaoMap
             venues={filteredVenues}
-            selectedTeam={selectedTeam}
+            selectedTeam={primaryTeam}
             selectedVenue={selectedVenue}
             onVenueClick={handleVenueSelect}
             userLocation={userLocation}
             onBoundsChange={handleBoundsChange}
           />
 
-          {/* 내 위치 버튼 */}
           <button
             className={`locateBtn${locating ? ' locateBtn--locating' : ''}`}
             onClick={handleLocate}
@@ -233,7 +255,7 @@ function App() {
 
       {showReport && (
         <ReportModal
-          selectedTeam={selectedTeam}
+          selectedTeam={primaryTeam || '전체'}
           onClose={() => setShowReport(false)}
         />
       )}

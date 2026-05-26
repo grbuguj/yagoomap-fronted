@@ -1,5 +1,37 @@
+import { useState, useEffect } from 'react'
 import { TEAM_CONFIG } from '../data/teams'
 import styles from './VenueList.module.css'
+
+// 앱 수명 동안 유지되는 썸네일 캐시
+const thumbCache = new Map()
+
+function VenueThumb({ name, teamColor }) {
+  const [url, setUrl] = useState(() => thumbCache.get(name) ?? null)
+
+  useEffect(() => {
+    if (thumbCache.has(name)) {
+      setUrl(thumbCache.get(name))
+      return
+    }
+    fetch(`/api/images?query=${encodeURIComponent(name)}`)
+      .then(r => r.ok ? r.json() : [])
+      .then(items => {
+        const imgUrl = items[0]?.thumbnail ?? null
+        thumbCache.set(name, imgUrl)
+        setUrl(imgUrl)
+      })
+      .catch(() => { thumbCache.set(name, null) })
+  }, [name])
+
+  if (url) {
+    return <img src={url} alt={name} className={styles.thumb} />
+  }
+  return (
+    <div className={styles.thumbPlaceholder} style={{ background: teamColor + '18' }}>
+      <span style={{ color: teamColor }}>🍺</span>
+    </div>
+  )
+}
 
 function Stars({ rating }) {
   return (
@@ -9,28 +41,56 @@ function Stars({ rating }) {
   )
 }
 
-function VenueList({ venues, selectedTeam, onSelect }) {
-  const teamColor = TEAM_CONFIG[selectedTeam]?.color || 'var(--clr-primary)'
+function VenueList({ venues, selectedTeams = [], onSelect, onOpenSelector }) {
+  // 단일 팀 선택 시 그 팀 컬러, 아니면 기본
+  const singleTeam = selectedTeams.length === 1 ? TEAM_CONFIG[selectedTeams[0]] : null
+  const teamColor  = singleTeam?.color || 'var(--clr-primary)'
+
+  const headerLabel = selectedTeams.length === 0
+    ? '전체 구단'
+    : selectedTeams.length === 1
+      ? selectedTeams[0]
+      : `${selectedTeams.length}개 구단`
 
   if (venues.length === 0) {
     return (
-      <div className={styles.empty}>
-        <span>⚾</span>
-        <p>검색 결과가 없어요</p>
-        <small>다른 검색어나 필터를 시도해보세요</small>
-      </div>
+      <>
+        <div className={styles.listHeader}>
+          <button className={styles.backBtn} onClick={onOpenSelector}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            {headerLabel}
+          </button>
+          <span className={styles.headerCount}>0곳</span>
+        </div>
+        <div className={styles.empty}>
+          <span>⚾</span>
+          <p>검색 결과가 없어요</p>
+          <small>다른 검색어나 필터를 시도해보세요</small>
+        </div>
+      </>
     )
   }
 
   return (
     <ul className={styles.list}>
-      <li className={styles.count}>{venues.length}곳</li>
-      {venues.map(venue => (
+      <li className={styles.listHeader}>
+        <button className={styles.backBtn} onClick={onOpenSelector}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+          {headerLabel}
+        </button>
+        <span className={styles.headerCount}>{venues.length}곳</span>
+      </li>
+
+      {venues.map(venue => {
+        const vTeamColor = TEAM_CONFIG[venue.team]?.color || teamColor
+        return (
         <li key={venue.id} className={styles.item} onClick={() => onSelect(venue)}>
           <div className={styles.itemLeft}>
-            <div className={styles.imgPlaceholder} style={{ background: teamColor + '18' }}>
-              <span style={{ color: teamColor }}>🍺</span>
-            </div>
+            <VenueThumb name={venue.name} teamColor={vTeamColor} />
           </div>
           <div className={styles.itemBody}>
             <div className={styles.nameRow}>
@@ -42,7 +102,8 @@ function VenueList({ venues, selectedTeam, onSelect }) {
           </div>
           <span className={styles.arrow}>›</span>
         </li>
-      ))}
+        )
+      })}
     </ul>
   )
 }

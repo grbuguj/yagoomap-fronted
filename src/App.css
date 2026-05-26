@@ -233,6 +233,11 @@
   display: none;
 }
 
+/* 디테일 뷰에서 검색/팀필터 숨김 (PC + 모바일 공통) */
+.sidebarTop--detailMode {
+  display: none;
+}
+
 /* ── 모바일 반응형 (실제 폰 크기만 적용, PC 창 리사이즈 제외) ── */
 @media (max-width: 480px) {
   /* ── 사이드바 래퍼 → 바텀 시트 ── */
@@ -325,8 +330,4 @@
     padding: 7px 14px;
   }
 
-  /* 디테일 뷰에서 검색/팀필터 숨김 → 가게 정보 공간 최대화 */
-  .sidebarTop--detailMode {
-    display: none;
-  }
 }

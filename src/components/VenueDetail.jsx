@@ -60,11 +60,21 @@ function VenueDetail({ venue, onClose }) {
 
         {/* 지도 연결 버튼 */}
         <div className={styles.btnRow}>
-          <button className={styles.mapBtn} onClick={handleKakaoMap}>
-            카카오맵 길찾기
+          <button className={`${styles.mapBtn} ${styles.mapBtnKakao}`} onClick={handleKakaoMap}>
+            <span className={styles.mapIcon}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 3C6.477 3 2 6.925 2 11.785c0 3.018 1.677 5.684 4.236 7.348l-.978 3.643a.25.25 0 0 0 .373.279L9.93 20.59A11.1 11.1 0 0 0 12 20.57c5.523 0 10-3.925 10-8.785S17.523 3 12 3"/>
+              </svg>
+            </span>
+            카카오맵 연결
           </button>
-          <button className={`${styles.mapBtn} ${styles.mapBtnSecondary}`} onClick={handleNaverMap}>
-            네이버 지도
+          <button className={`${styles.mapBtn} ${styles.mapBtnNaver}`} onClick={handleNaverMap}>
+            <span className={styles.mapIcon}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M16.273 12.845 7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/>
+              </svg>
+            </span>
+            네이버맵 연결
           </button>
         </div>
       </div>

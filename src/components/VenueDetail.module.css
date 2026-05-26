@@ -119,23 +119,30 @@
   border-radius: 10px;
   font-size: 13px;
   font-weight: 700;
-  background: var(--clr-primary);
-  color: #fff;
   transition: opacity 0.15s;
-  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
 
 .mapBtn:hover {
   opacity: 0.85;
 }
 
-.mapBtnSecondary {
-  background: var(--clr-bg);
-  color: var(--clr-text);
-  border: 1.5px solid var(--clr-border);
+.mapIcon {
+  display: flex;
+  align-items: center;
 }
 
-.mapBtnSecondary:hover {
-  background: var(--clr-border);
-  opacity: 1;
+/* 카카오 브랜드 */
+.mapBtnKakao {
+  background: #FEE500;
+  color: #3C1E1E;
+}
+
+/* 네이버 브랜드 */
+.mapBtnNaver {
+  background: #03C75A;
+  color: #fff;
 }

@@ -1,34 +1,37 @@
 .app {
-  display: flex;
-  flex-direction: column;
+  position: relative;
   height: 100vh;
   overflow: hidden;
 }
 
-/* 헤더 아래 콘텐츠 영역 */
+/* 지도가 진짜 풀스크린 기준점 */
 .content {
-  flex: 1;
-  overflow: hidden;
-  position: relative; /* 모든 자식 absolute의 기준점 */
+  position: absolute;
+  inset: 0;
 }
 
-/* ── 사이드바 래퍼 (지도 위에 오버레이) ──────────── */
+/* ── 사이드바 래퍼 (플로팅 카드) ─────── */
+/* 헤더 top(16) + 헤더 높이(--header-h) + 간격(12) */
 .sidebarWrap {
   position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
+  left: 16px;
+  top: calc(var(--header-h) + 28px);
+  bottom: 16px;
   z-index: 20;
   width: var(--sidebar-w);
+  border-radius: 16px;
   overflow: hidden;
-  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.14);
+  transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.25s;
 }
 
 .sidebarWrap--closed {
   width: 0;
+  box-shadow: none;
 }
 
-/* ── 사이드바 본체 ──────────────────────────────── */
+/* ── 사이드바 본체 ───────────── */
 .sidebar {
   width: var(--sidebar-w);
   height: 100%;
@@ -37,7 +40,6 @@
   flex-direction: column;
   background: #fff;
   overflow: hidden;
-  border-right: 1px solid var(--clr-border);
 }
 
 .sidebarTop {
@@ -56,19 +58,21 @@
 }
 
 /* ── 사이드바 토글 탭 ─────────────────────────────── */
+/* 사이드바 수직 중심: top = (header_top16 + header_h + gap12) + (남은높이)/2
+   ≈ 50% + (header_h/2 + 14px) */
 .sidebarToggle {
   position: absolute;
-  left: var(--sidebar-w);
+  left: calc(16px + var(--sidebar-w));
   top: 50%;
   transform: translateY(-50%);
   z-index: 21; /* sidebarWrap(20) 위 */
-  width: 16px;
+  width: 18px;
   height: 52px;
   background: #fff;
   border: 1px solid var(--clr-border);
   border-left: none;
-  border-radius: 0 8px 8px 0;
-  box-shadow: 2px 0 6px rgba(0, 0, 0, 0.12);
+  border-radius: 0 10px 10px 0;
+  box-shadow: 3px 0 10px rgba(0, 0, 0, 0.12);
   font-size: 10px;
   font-weight: 700;
   color: var(--clr-muted);
@@ -86,12 +90,18 @@
   color: var(--clr-text);
 }
 
-/* 닫힌 상태: 지도 위로 돌출 → 그림자 강화로 가시성 확보 */
+/* 닫힌 상태 */
 .content--closed .sidebarToggle {
-  left: 0;
+  left: 16px;
   border-left: 1px solid var(--clr-border);
-  border-radius: 0 8px 8px 0;
-  box-shadow: 3px 0 12px rgba(0, 0, 0, 0.22);
+  border-radius: 0 10px 10px 0;
+  box-shadow: 3px 0 12px rgba(0, 0, 0, 0.18);
+}
+
+/* 맵 위 버튼들 그림자 통일 */
+.reSearchBtn,
+.reportBtn {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
 }
 
 /* ── 준비중 ─────────────────────────────────────── */
@@ -135,7 +145,7 @@
   position: absolute;
   top: 14px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateY(-8px);
   z-index: 10;
   background: #fff;
   border-radius: 20px;
@@ -148,11 +158,52 @@
   align-items: center;
   gap: 6px;
   white-space: nowrap;
-  transition: background 0.1s;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s, background 0.1s;
+}
+
+.reSearchBtn--visible {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
 }
 
 .reSearchBtn:hover {
   background: #f5f5f5;
+}
+
+.locateBtn {
+  position: absolute;
+  bottom: 86px;
+  right: 16px;
+  z-index: 10;
+  width: 42px;
+  height: 42px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4285F4;
+  transition: background 0.1s, opacity 0.15s;
+}
+
+.locateBtn:hover {
+  background: #f0f6ff;
+}
+
+.locateBtn:disabled {
+  opacity: 0.55;
+}
+
+.locateBtn--locating svg {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 .reportBtn {
@@ -175,4 +226,93 @@
 
 .reportBtn:hover {
   opacity: 0.88;
+}
+
+/* ── 모바일 핸들 (데스크톱에선 숨김) ───────────────────── */
+.sidebarHandle {
+  display: none;
+}
+
+/* ── 모바일 반응형 (실제 폰 크기만 적용, PC 창 리사이즈 제외) ── */
+@media (max-width: 480px) {
+  /* ── 사이드바 래퍼 → 바텀 시트 ── */
+  .sidebarWrap {
+    left: 0;
+    right: 0;
+    top: auto;
+    bottom: 0;
+    width: 100%;
+    /* 핸들(28px) + 컨텐츠 */
+    height: calc(60vh + 28px);
+    border-radius: 20px 20px 0 0;
+    box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.14);
+    /* flex 컨테이너로 핸들 + 사이드바 분리 */
+    display: flex;
+    flex-direction: column;
+    transition: height 0.28s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.25s;
+  }
+
+  /* 닫힌 상태: 핸들만 보임 */
+  .sidebarWrap--closed {
+    height: 28px;
+    width: 100%;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
+  }
+
+  /* ── 드래그 핸들 ── */
+  .sidebarHandle {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    height: 28px;
+    background: #fff;
+    border: none;
+    border-radius: 20px 20px 0 0;
+    cursor: pointer;
+    width: 100%;
+    padding: 0;
+    touch-action: none;
+  }
+
+  .sidebarHandleBar {
+    width: 36px;
+    height: 4px;
+    background: #d1d5db;
+    border-radius: 2px;
+    pointer-events: none;
+  }
+
+  /* 사이드바 본체가 남은 공간 채움 + 폭 강제 100% */
+  .sidebar {
+    flex: 1;
+    min-height: 0;
+    width: 100%;   /* var(--sidebar-w) 380px 고정값 override */
+    border-radius: 0;
+  }
+
+  /* 데스크톱 사이드 토글 완전 숨김 */
+  .sidebarToggle {
+    display: none !important;
+  }
+
+  /* ── 지도 플로팅 버튼 ── */
+  /* 모바일에선 헤더에 제보 버튼 있으므로 지도 버튼 숨김 */
+  .reportBtn {
+    display: none;
+  }
+
+  /* 내 위치 버튼: 헤더 바로 아래 */
+  .locateBtn {
+    bottom: auto;
+    top: 88px;
+    right: 12px;
+  }
+
+  /* 재검색 버튼 폭 줄임 */
+  .reSearchBtn {
+    font-size: 12px;
+    padding: 7px 14px;
+  }
 }

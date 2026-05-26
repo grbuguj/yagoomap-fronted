@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback, useRef } from 'react'
 import Header        from './components/Header'
 import SearchBar     from './components/SearchBar'
 import TeamFilter    from './components/TeamFilter'
@@ -17,8 +17,13 @@ function App() {
   const [keyword,       setKeyword]       = useState('')
   const [selectedVenue, setSelectedVenue] = useState(null)
   const [showReport,    setShowReport]    = useState(false)
-  const [sidebarOpen,   setSidebarOpen]   = useState(true)
+  const [sidebarOpen,   setSidebarOpen]   = useState(() => window.innerWidth > 480)
   const [policyType,    setPolicyType]    = useState(null) // 'privacy' | 'terms' | null
+  const [userLocation,  setUserLocation]  = useState(null)
+  const [locating,      setLocating]      = useState(false)
+  const [mapMoved,      setMapMoved]      = useState(false)
+  const liveBoundsRef  = useRef(null)   // 최신 지도 bounds (plain object)
+  const [boundsFilter, setBoundsFilter]  = useState(null)  // 재검색 시 스냅샷
 
   // 전체 or 준비된 팀 선택 시 true
   const isAvailable = selectedTeam === '전체' || AVAILABLE_TEAMS.includes(selectedTeam)
@@ -27,6 +32,8 @@ function App() {
     setSelectedTeam(team)
     setSelectedVenue(null)
     setKeyword('')
+    setBoundsFilter(null)   // 팀 바꾸면 bounds 필터 초기화
+    setMapMoved(false)
   }, [])
 
   const handleVenueSelect = useCallback((venue) => {
@@ -36,6 +43,35 @@ function App() {
 
   const handleVenueClose = useCallback(() => {
     setSelectedVenue(null)
+  }, [])
+
+  const handleBoundsChange = useCallback((bounds) => {
+    liveBoundsRef.current = bounds
+    setMapMoved(true)
+  }, [])
+
+  const handleReSearch = useCallback(() => {
+    setBoundsFilter(liveBoundsRef.current)
+    setMapMoved(false)
+  }, [])
+
+  const handleLocate = useCallback(() => {
+    if (!navigator.geolocation) {
+      alert('이 브라우저는 위치 서비스를 지원하지 않아요.')
+      return
+    }
+    setLocating(true)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setUserLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude })
+        setLocating(false)
+      },
+      () => {
+        alert('위치 정보를 가져올 수 없어요.\n위치 권한을 허용해주세요.')
+        setLocating(false)
+      },
+      { timeout: 8000, maximumAge: 60000 }
+    )
   }, [])
 
   const filteredVenues = useMemo(() => {
@@ -51,8 +87,15 @@ function App() {
         v.address.toLowerCase().includes(kw)
       )
     }
+    // 지역 재검색 bounds 필터
+    if (boundsFilter) {
+      list = list.filter(v =>
+        v.lat >= boundsFilter.swLat && v.lat <= boundsFilter.neLat &&
+        v.lng >= boundsFilter.swLng && v.lng <= boundsFilter.neLng
+      )
+    }
     return list
-  }, [selectedTeam, isAvailable, keyword])
+  }, [selectedTeam, isAvailable, keyword, boundsFilter])
 
   return (
     <div className="app">
@@ -61,6 +104,10 @@ function App() {
       <div className={`content${sidebarOpen ? '' : ' content--closed'}`}>
         {/* ── 사이드바 래퍼 ── */}
         <div className={`sidebarWrap${sidebarOpen ? '' : ' sidebarWrap--closed'}`}>
+          {/* 모바일 전용 드래그 핸들 (데스크톱에선 display:none) */}
+          <button className="sidebarHandle" onClick={() => setSidebarOpen(o => !o)}>
+            <span className="sidebarHandleBar" />
+          </button>
           <aside className="sidebar">
             <div className="sidebarTop">
               <SearchBar
@@ -80,7 +127,7 @@ function App() {
                   <small>곧 오픈할게요 🙏</small>
                 </div>
               ) : selectedVenue ? (
-                <VenueDetail venue={selectedVenue} onClose={handleVenueClose} />
+                <VenueDetail key={selectedVenue.id} venue={selectedVenue} onClose={handleVenueClose} />
               ) : (
                 <VenueList
                   venues={filteredVenues}
@@ -105,14 +152,37 @@ function App() {
 
         {/* ── 지도 영역 ── */}
         <div className="mapArea">
-          <button className="reSearchBtn">↺ 이 지역 재검색</button>
+          <button
+            className={`reSearchBtn${mapMoved ? ' reSearchBtn--visible' : ''}`}
+            onClick={handleReSearch}
+          >
+            ↺ 이 지역 재검색
+          </button>
 
           <KakaoMap
             venues={filteredVenues}
             selectedTeam={selectedTeam}
             selectedVenue={selectedVenue}
             onVenueClick={handleVenueSelect}
+            userLocation={userLocation}
+            onBoundsChange={handleBoundsChange}
           />
+
+          {/* 내 위치 버튼 */}
+          <button
+            className={`locateBtn${locating ? ' locateBtn--locating' : ''}`}
+            onClick={handleLocate}
+            disabled={locating}
+            title="내 위치로 이동"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2.2"
+              strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="3" fill="currentColor" stroke="none"/>
+              <path d="M12 2v3M12 19v3M2 12h3M19 12h3"/>
+              <circle cx="12" cy="12" r="8"/>
+            </svg>
+          </button>
 
           <button className="reportBtn" onClick={() => setShowReport(true)}>
             📍 제보하기

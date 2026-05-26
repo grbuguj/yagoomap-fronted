@@ -83,6 +83,11 @@
   font-weight: 700;
 }
 
+.emptyStars {
+  color: #d1d5db;
+  font-weight: 400;
+}
+
 .ratingNum {
   color: var(--clr-text);
   font-size: 14px;

@@ -1,18 +1,24 @@
+import { useState } from 'react'
 import { TEAM_CONFIG } from '../data/teams'
 import ReviewSection from './ReviewSection'
 import styles from './VenueDetail.module.css'
 
 
 function Stars({ rating }) {
+  const full  = Math.floor(rating)
+  const empty = 5 - full
   return (
     <span className={styles.stars}>
-      {'★'.repeat(Math.floor(rating))}
+      {'★'.repeat(full)}
+      <span className={styles.emptyStars}>{'☆'.repeat(empty)}</span>
       <span className={styles.ratingNum}>{rating.toFixed(1)}</span>
     </span>
   )
 }
 
 function VenueDetail({ venue, onClose }) {
+  const [reviewCount, setReviewCount] = useState(venue?.reviewCount ?? 0)
+
   if (!venue) return null
 
   const teamCfg = TEAM_CONFIG[venue.team]
@@ -50,7 +56,7 @@ function VenueDetail({ venue, onClose }) {
         {/* 별점 */}
         <div className={styles.ratingRow}>
           <Stars rating={venue.rating} />
-          <span className={styles.reviewCount}>리뷰 {venue.reviewCount}개</span>
+          <span className={styles.reviewCount}>리뷰 {reviewCount}개</span>
         </div>
 
         {/* 안내 문구 */}
@@ -80,7 +86,7 @@ function VenueDetail({ venue, onClose }) {
       </div>
 
       {/* 리뷰 섹션 */}
-      <ReviewSection venueId={venue.id} />
+      <ReviewSection venueId={venue.id} onCountChange={setReviewCount} />
     </div>
   )
 }

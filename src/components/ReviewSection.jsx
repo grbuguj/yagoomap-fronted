@@ -47,7 +47,7 @@ function ReviewItem({ review }) {
 }
 
 /* ── ReviewSection ──────────────────────────────────── */
-function ReviewSection({ venueId }) {
+function ReviewSection({ venueId, onCountChange }) {
   const [reviews,    setReviews]    = useState([])
   const [loading,    setLoading]    = useState(true)
   const [showForm,   setShowForm]   = useState(false)
@@ -62,17 +62,22 @@ function ReviewSection({ venueId }) {
       if (!cancelled) {
         setReviews(data)
         setLoading(false)
+        onCountChange?.(data.length)
       }
     })
     return () => { cancelled = true }
-  }, [venueId])
+  }, [venueId, onCountChange])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     if (!rating || !content.trim()) return
     setSubmitting(true)
     const newReview = await submitReview({ venueId, rating, content: content.trim() })
-    setReviews(prev => [newReview, ...prev])
+    setReviews(prev => {
+      const updated = [newReview, ...prev]
+      onCountChange?.(updated.length)
+      return updated
+    })
     setRating(0)
     setContent('')
     setShowForm(false)

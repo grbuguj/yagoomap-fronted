@@ -53,7 +53,7 @@ function KakaoMap({ venues, selectedTeam, selectedVenue, onVenueClick, userLocat
         ? new window.kakao.maps.LatLng(35.1940, 129.0614)
         : new window.kakao.maps.LatLng(37.5665, 126.9780)
 
-    const map = new window.kakao.maps.Map(mapRef.current, { center, level: 20 })
+    const map = new window.kakao.maps.Map(mapRef.current, { center, level: 9 })
     mapInstance.current = map
 
     // 드래그/줌 후 bounds를 App으로 전달 → 재검색 버튼 표시

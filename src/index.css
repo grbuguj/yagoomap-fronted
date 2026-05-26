@@ -1,22 +1,32 @@
-* {
+:root {
+  --clr-lg:      #C30452;
+  --clr-kia:     #EA0029;
+  --clr-lotte:   #002B72;
+  --clr-primary: #C30452;
+  --clr-border:  #E5E7EB;
+  --clr-bg:      #F8F9FA;
+  --clr-text:    #1A1A1A;
+  --clr-muted:   #6B7280;
+  --sidebar-w:   380px;
+  --header-h:    60px;
+}
+
+*, *::before, *::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
 }
 
-html, body {
+html, body, #root {
   height: 100%;
   width: 100%;
-  background: #e8e8e8;
 }
 
-#root {
-  height: 100%;
-  width: 100%;
+body {
   font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
-  color: #1a1a1a;
+  color: var(--clr-text);
   -webkit-font-smoothing: antialiased;
+  background: #fff;
 }
 
 button {
@@ -26,8 +36,72 @@ button {
   font-family: inherit;
 }
 
-input {
+input, textarea {
   font-family: inherit;
-  border: none;
   outline: none;
 }
+
+/* ── 카카오맵 커스텀 마커 ─────────────────────────────────────── */
+.ymap-marker {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+}
+
+.ymap-pin {
+  width: 34px;
+  height: 34px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ymap-pin-text {
+  transform: rotate(45deg);
+  font-size: 10px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+  letter-spacing: -0.3px;
+}
+
+.ymap-label {
+  margin-top: 5px;
+  background: #fff;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--clr-text);
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.16);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 팀별 핀 색상 */
+.ymap-marker--lg   .ymap-pin { background: var(--clr-lg); }
+.ymap-marker--kia  .ymap-pin { background: var(--clr-kia); }
+.ymap-marker--lotte .ymap-pin { background: var(--clr-lotte); }
+
+/* 선택 상태 */
+.ymap-marker--active .ymap-pin {
+  transform: rotate(-45deg) scale(1.25);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}
+
+.ymap-marker--active .ymap-label {
+  font-weight: 700;
+}
+
+.ymap-marker--lg.ymap-marker--active   .ymap-label { color: var(--clr-lg); border-color: var(--clr-lg); }
+.ymap-marker--kia.ymap-marker--active  .ymap-label { color: var(--clr-kia); border-color: var(--clr-kia); }
+.ymap-marker--lotte.ymap-marker--active .ymap-label { color: var(--clr-lotte); border-color: var(--clr-lotte); }

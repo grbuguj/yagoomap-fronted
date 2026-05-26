@@ -1,0 +1,229 @@
+.wrap {
+  border-top: 8px solid var(--clr-bg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── 헤더 ─────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--clr-text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.count {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--clr-muted);
+  background: var(--clr-bg);
+  padding: 1px 7px;
+  border-radius: 10px;
+}
+
+.writeBtn {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--clr-primary);
+  padding: 5px 10px;
+  border-radius: 8px;
+  border: 1.5px solid var(--clr-primary);
+  background: #fff;
+  transition: background 0.12s, color 0.12s;
+}
+
+.writeBtn:hover {
+  background: var(--clr-primary);
+  color: #fff;
+}
+
+.writeBtnCancel {
+  color: var(--clr-muted);
+  border-color: var(--clr-border);
+}
+
+.writeBtnCancel:hover {
+  background: var(--clr-bg);
+  color: var(--clr-text);
+}
+
+/* ── 작성 폼 ──────────────────────────────────────── */
+.form {
+  background: var(--clr-bg);
+  border-radius: 12px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: 1px solid var(--clr-border);
+}
+
+.formLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--clr-muted);
+}
+
+/* ── 별점 선택기 ──────────────────────────────────── */
+.starPicker {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.starBtn {
+  font-size: 24px;
+  color: var(--clr-border);
+  line-height: 1;
+  transition: color 0.1s, transform 0.1s;
+}
+
+.starBtn:hover,
+.starBtnOn {
+  color: #f59e0b;
+  transform: scale(1.15);
+}
+
+.starLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f59e0b;
+  margin-left: 6px;
+}
+
+/* ── textarea ─────────────────────────────────────── */
+.textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid var(--clr-border);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--clr-text);
+  background: #fff;
+  resize: none;
+  line-height: 1.5;
+  transition: border-color 0.15s;
+}
+
+.textarea:focus {
+  border-color: var(--clr-primary);
+  outline: none;
+}
+
+.textarea::placeholder {
+  color: var(--clr-muted);
+}
+
+/* ── 등록 버튼 ────────────────────────────────────── */
+.submitBtn {
+  width: 100%;
+  padding: 11px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--clr-primary);
+  color: #fff;
+  transition: opacity 0.15s;
+}
+
+.submitBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.submitBtn:not(:disabled):hover {
+  opacity: 0.85;
+}
+
+/* ── 리뷰 목록 ────────────────────────────────────── */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.item {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--clr-border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.item:last-child {
+  border-bottom: none;
+}
+
+.itemHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.itemStars {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.itemStarsFilled {
+  color: #f59e0b;
+}
+
+.itemStarsEmpty {
+  color: var(--clr-border);
+}
+
+.itemDate {
+  font-size: 11px;
+  color: var(--clr-muted);
+}
+
+.itemContent {
+  font-size: 13px;
+  color: var(--clr-text);
+  line-height: 1.55;
+  word-break: keep-all;
+}
+
+/* ── 빈 상태 / 로딩 ──────────────────────────────── */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 28px 0 12px;
+  text-align: center;
+  color: var(--clr-muted);
+}
+
+.empty span {
+  font-size: 28px;
+  opacity: 0.4;
+}
+
+.empty p {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--clr-text);
+}
+
+.empty small {
+  font-size: 12px;
+}
+
+.placeholder {
+  font-size: 13px;
+  color: var(--clr-muted);
+  padding: 16px 0;
+  text-align: center;
+}

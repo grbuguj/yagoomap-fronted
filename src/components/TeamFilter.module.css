@@ -1,0 +1,116 @@
+.wrap {
+  position: relative;
+}
+
+/* ── 트리거 버튼 ─────────────────────────────── */
+.trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 12px;
+  background: #fff;
+  border: 1.5px solid var(--clr-border);
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--clr-text);
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.trigger:hover,
+.triggerOpen {
+  border-color: var(--clr-primary);
+}
+
+.triggerLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.triggerLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--clr-text);
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.arrow {
+  font-size: 9px;
+  color: var(--clr-muted);
+}
+
+/* ── 드롭다운 ───────────────────────────────── */
+.dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1.5px solid var(--clr-border);
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  z-index: 100;
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.divider {
+  height: 1px;
+  background: var(--clr-border);
+  margin: 4px 0;
+}
+
+/* ── 옵션 ───────────────────────────────────── */
+.option {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--clr-text);
+  text-align: left;
+  transition: background 0.1s;
+}
+
+.option:hover {
+  background: var(--clr-bg);
+}
+
+.optionActive {
+  font-weight: 700;
+  background: var(--clr-bg);
+}
+
+.optionDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.optionName {
+  flex: 1;
+}
+
+.soon {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--clr-muted);
+  background: var(--clr-bg);
+  border: 1px solid var(--clr-border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  flex-shrink: 0;
+}

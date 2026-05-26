@@ -1,23 +1,17 @@
-import { AREAS } from '../data/venues'
 import styles from './AreaFilter.module.css'
 
-function AreaFilter({ selectedArea, onSelectArea }) {
+function AreaFilter({ areas, selected, onSelect }) {
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.scroll}>
-        {AREAS.map((area) => (
-          <button
-            key={area}
-            className={`${styles.chip} ${selectedArea === area ? styles.active : ''}`}
-            onClick={() => onSelectArea(area)}
-          >
-            {area}
-          </button>
-        ))}
-        <button className={styles.moreBtn}>
-          더보기 ∨
+    <div className={styles.scroll}>
+      {areas.map(area => (
+        <button
+          key={area}
+          className={`${styles.chip} ${selected === area ? styles.active : ''}`}
+          onClick={() => onSelect(area)}
+        >
+          {area}
         </button>
-      </div>
+      ))}
     </div>
   )
 }

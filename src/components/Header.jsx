@@ -1,19 +1,21 @@
 import styles from './Header.module.css'
 
-function Header() {
+function Header({ onReport }) {
   return (
     <header className={styles.header}>
       <div className={styles.logo}>
         <span className={styles.logoIcon}>⚾</span>
         <div className={styles.logoText}>
-          <span className={styles.logoMain}>야구틀어주는술집</span>
-          <span className={styles.logoSub}>LG TWINS MAP</span>
+          <span className={styles.logoMain}>야구맵</span>
+          <span className={styles.logoSub}>야구 틀어주는 술집 지도</span>
         </div>
       </div>
-      <button className={styles.bellBtn} aria-label="알림">
-        <span className={styles.bellIcon}>🔔</span>
-        <span className={styles.bellDot} />
-      </button>
+
+      <nav className={styles.nav}>
+        <button className={styles.reportBtn} onClick={onReport}>
+          📍 제보하기
+        </button>
+      </nav>
     </header>
   )
 }

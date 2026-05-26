@@ -1,34 +1,84 @@
-const TEAMS = [
-    { name: 'LG 트윈스', color: '#C30452', available: true },
-    { name: 'KIA 타이거즈', color: '#EA0029', available: false },
-    { name: '삼성 라이온즈', color: '#074CA1', available: false },
-    { name: '두산 베어스', color: '#131230', available: false },
-    { name: 'KT 위즈', color: '#000000', available: false },
-    { name: 'SSG 랜더스', color: '#CE0E2D', available: false },
-    { name: '롯데 자이언츠', color: '#002B72', available: false },
-    { name: '한화 이글스', color: '#FF6600', available: false },
-    { name: 'NC 다이노스', color: '#1D467A', available: false },
-    { name: '키움 히어로즈', color: '#820024', available: false },
-]
+import { useState, useRef, useEffect } from 'react'
+import { TEAMS, AVAILABLE_TEAMS } from '../data/teams'
+import styles from './TeamFilter.module.css'
 
-function TeamFilter({ selectedTeam, onSelectTeam }) {
-    return (
-        <div>
-            {TEAMS.map((team) => (
-                <button
-                    key={team.name}
-                    disabled={!team.available}
-                    onClick={() => onSelectTeam(team.name)}
-                    style={{
-                        backgroundColor: selectedTeam === team.name ? team.color : '',
-                        color: selectedTeam === team.name ? 'white' : '',
-                    }}
-                >
-                    {team.name} {!team.available && '준비중'}
-                </button>
-            ))}
+function TeamFilter({ selected, onSelect }) {
+  const [open, setOpen] = useState(false)
+  const wrapRef = useRef(null)
+
+  // 외부 클릭 시 닫기
+  useEffect(() => {
+    if (!open) return
+    const handler = (e) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target)) {
+        setOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [open])
+
+  const currentTeam = TEAMS.find(t => t.key === selected)
+  const label = selected === '전체' ? '전체 구단' : (currentTeam?.key ?? '구단 선택')
+  const dotColor = currentTeam?.color ?? null
+
+  const handleSelect = (key) => {
+    onSelect(key)
+    setOpen(false)
+  }
+
+  return (
+    <div className={styles.wrap} ref={wrapRef}>
+      {/* 트리거 버튼 */}
+      <button
+        className={`${styles.trigger} ${open ? styles.triggerOpen : ''}`}
+        onClick={() => setOpen(o => !o)}
+      >
+        <span className={styles.triggerLeft}>
+          {dotColor && (
+            <span className={styles.dot} style={{ background: dotColor }} />
+          )}
+          <span className={styles.triggerLabel}>{label}</span>
+        </span>
+        <span className={styles.arrow}>{open ? '▲' : '▼'}</span>
+      </button>
+
+      {/* 드롭다운 */}
+      {open && (
+        <div className={styles.dropdown}>
+          {/* 전체 */}
+          <button
+            className={`${styles.option} ${selected === '전체' ? styles.optionActive : ''}`}
+            onClick={() => handleSelect('전체')}
+          >
+            <span className={styles.optionDot} style={{ background: '#1a1a1a' }} />
+            <span className={styles.optionName}>전체 구단</span>
+          </button>
+
+          <div className={styles.divider} />
+
+          {/* 10개 팀 */}
+          {TEAMS.map(team => {
+            const isActive    = selected === team.key
+            const isAvailable = AVAILABLE_TEAMS.includes(team.key)
+            return (
+              <button
+                key={team.key}
+                className={`${styles.option} ${isActive ? styles.optionActive : ''}`}
+                onClick={() => handleSelect(team.key)}
+              >
+                <span className={styles.optionDot} style={{ background: team.color }} />
+                <span className={styles.optionName}>{team.key}</span>
+                {!isAvailable && (
+                  <span className={styles.soon}>준비중</span>
+                )}
+              </button>
+            )
+          })}
         </div>
-    )
+      )}
+    </div>
+  )
 }
 
 export default TeamFilter

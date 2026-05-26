@@ -1,16 +1,9 @@
-.wrapper {
-  background: #fff;
-  border-bottom: 1px solid #f0f0f0;
-  flex-shrink: 0;
-}
-
 .scroll {
   display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 16px;
+  gap: 6px;
   overflow-x: auto;
   scrollbar-width: none;
+  padding-bottom: 2px;
 }
 
 .scroll::-webkit-scrollbar {
@@ -19,32 +12,24 @@
 
 .chip {
   flex-shrink: 0;
-  padding: 7px 14px;
-  border-radius: 20px;
-  font-size: 13px;
+  padding: 5px 12px;
+  border-radius: 16px;
+  font-size: 12px;
   font-weight: 500;
-  border: 1.5px solid #e0e0e0;
+  border: 1.5px solid var(--clr-border);
   background: #fff;
-  color: #555;
-  cursor: pointer;
+  color: var(--clr-muted);
   transition: all 0.15s;
 }
 
 .chip.active {
-  background: #C30452;
-  border-color: #C30452;
+  background: var(--clr-text);
+  border-color: var(--clr-text);
   color: #fff;
   font-weight: 700;
 }
 
-.moreBtn {
-  flex-shrink: 0;
-  padding: 7px 14px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 500;
-  border: 1.5px solid #e0e0e0;
-  background: #fff;
-  color: #555;
-  cursor: pointer;
+.chip:hover:not(.active) {
+  border-color: #aaa;
+  color: var(--clr-text);
 }

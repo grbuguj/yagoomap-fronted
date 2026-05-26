@@ -1,22 +1,20 @@
 import styles from './SearchBar.module.css'
 
-function SearchBar() {
+function SearchBar({ value, onChange, disabled }) {
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.searchBox}>
-        <span className={styles.searchIcon}>🔍</span>
-        <input
-          className={styles.input}
-          type="text"
-          placeholder="지역, 가게명 검색"
-          readOnly
-        />
-      </div>
-      <button className={styles.filterBtn}>
-        <span>⚙</span>
-        <span>필터</span>
-        <span className={styles.filterDot} />
-      </button>
+    <div className={`${styles.wrap} ${disabled ? styles.disabled : ''}`}>
+      <span className={styles.icon}>🔍</span>
+      <input
+        className={styles.input}
+        type="text"
+        placeholder="가게명, 주소, 태그 검색"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        disabled={disabled}
+      />
+      {value && !disabled && (
+        <button className={styles.clear} onClick={() => onChange('')}>✕</button>
+      )}
     </div>
   )
 }

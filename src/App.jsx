@@ -109,7 +109,8 @@ function App() {
             <span className="sidebarHandleBar" />
           </button>
           <aside className="sidebar">
-            <div className="sidebarTop">
+            {/* 모바일 디테일 뷰에서는 검색/팀필터 숨김 */}
+            <div className={`sidebarTop${selectedVenue ? ' sidebarTop--detailMode' : ''}`}>
               <SearchBar
                 value={keyword}
                 onChange={setKeyword}

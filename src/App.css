@@ -315,4 +315,9 @@
     font-size: 12px;
     padding: 7px 14px;
   }
+
+  /* 디테일 뷰에서 검색/팀필터 숨김 → 가게 정보 공간 최대화 */
+  .sidebarTop--detailMode {
+    display: none;
+  }
 }

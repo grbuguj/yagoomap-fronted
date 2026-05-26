@@ -242,8 +242,8 @@
     top: auto;
     bottom: 0;
     width: 100%;
-    /* 핸들(28px) + 컨텐츠 */
-    height: calc(60vh + 28px);
+    /* 핸들(36px) + 컨텐츠 */
+    height: calc(60vh + 36px);
     border-radius: 20px 20px 0 0;
     box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.14);
     /* flex 컨테이너로 핸들 + 사이드바 분리 */
@@ -255,7 +255,7 @@
 
   /* 닫힌 상태: 핸들만 보임 */
   .sidebarWrap--closed {
-    height: 28px;
+    height: 36px;
     width: 100%;
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
   }
@@ -266,22 +266,31 @@
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    height: 28px;
+    height: 36px;          /* 터치 영역 충분히 */
     background: #fff;
     border: none;
     border-radius: 20px 20px 0 0;
-    cursor: pointer;
+    cursor: grab;
     width: 100%;
     padding: 0;
-    touch-action: none;
+    touch-action: pan-x;   /* 수직 스와이프는 이 컴포넌트가 처리 */
+  }
+
+  .sidebarHandle:active {
+    cursor: grabbing;
   }
 
   .sidebarHandleBar {
-    width: 36px;
+    width: 40px;
     height: 4px;
-    background: #d1d5db;
+    background: #c4c4c4;
     border-radius: 2px;
     pointer-events: none;
+    transition: background 0.15s;
+  }
+
+  .sidebarHandle:active .sidebarHandleBar {
+    background: #9ca3af;
   }
 
   /* 사이드바 본체가 남은 공간 채움 + 폭 강제 100% */

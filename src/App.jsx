@@ -25,6 +25,11 @@ function App() {
   const liveBoundsRef  = useRef(null)   // 최신 지도 bounds (plain object)
   const [boundsFilter, setBoundsFilter]  = useState(null)  // 재검색 시 스냅샷
 
+  // 바텀시트 스와이프 제스처
+  const swipeTouchY    = useRef(0)      // 터치 시작 Y
+  const swipeScrollTop = useRef(0)      // 터치 시작 시점의 sidebarBody 스크롤 위치
+  const sidebarBodyRef = useRef(null)   // sidebarBody DOM 참조
+
   // 전체 or 준비된 팀 선택 시 true
   const isAvailable = selectedTeam === '전체' || AVAILABLE_TEAMS.includes(selectedTeam)
 
@@ -53,6 +58,31 @@ function App() {
   const handleReSearch = useCallback(() => {
     setBoundsFilter(liveBoundsRef.current)
     setMapMoved(false)
+  }, [])
+
+  // ── 바텀시트 핸들 스와이프 ──────────────────────────────
+  const onHandleTouchStart = useCallback((e) => {
+    swipeTouchY.current = e.touches[0].clientY
+  }, [])
+
+  const onHandleTouchEnd = useCallback((e) => {
+    const dy = e.changedTouches[0].clientY - swipeTouchY.current
+    if      (dy >  40) setSidebarOpen(false)  // 아래로 → 닫기
+    else if (dy < -40) setSidebarOpen(true)   // 위로  → 열기
+  }, [])
+
+  // ── 컨텐츠 영역: 맨 위에서 아래로 스와이프 → 닫기 ──────
+  const onBodyTouchStart = useCallback((e) => {
+    swipeTouchY.current    = e.touches[0].clientY
+    swipeScrollTop.current = sidebarBodyRef.current?.scrollTop ?? 0
+  }, [])
+
+  const onBodyTouchEnd = useCallback((e) => {
+    const dy = e.changedTouches[0].clientY - swipeTouchY.current
+    // 스크롤이 맨 위이고 아래로 60px 이상 → 닫기
+    if (dy > 60 && swipeScrollTop.current === 0) {
+      setSidebarOpen(false)
+    }
   }, [])
 
   const handleLocate = useCallback(() => {
@@ -105,7 +135,12 @@ function App() {
         {/* ── 사이드바 래퍼 ── */}
         <div className={`sidebarWrap${sidebarOpen ? '' : ' sidebarWrap--closed'}`}>
           {/* 모바일 전용 드래그 핸들 (데스크톱에선 display:none) */}
-          <button className="sidebarHandle" onClick={() => setSidebarOpen(o => !o)}>
+          <button
+            className="sidebarHandle"
+            onClick={() => setSidebarOpen(o => !o)}
+            onTouchStart={onHandleTouchStart}
+            onTouchEnd={onHandleTouchEnd}
+          >
             <span className="sidebarHandleBar" />
           </button>
           <aside className="sidebar">
@@ -119,7 +154,12 @@ function App() {
               <TeamFilter selected={selectedTeam} onSelect={handleTeamChange} />
             </div>
 
-            <div className="sidebarBody">
+            <div
+              className="sidebarBody"
+              ref={sidebarBodyRef}
+              onTouchStart={onBodyTouchStart}
+              onTouchEnd={onBodyTouchEnd}
+            >
               {!isAvailable ? (
                 <div className="comingSoon">
                   <span>⚾</span>

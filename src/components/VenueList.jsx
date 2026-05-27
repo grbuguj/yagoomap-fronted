@@ -5,6 +5,27 @@ import styles from './VenueList.module.css'
 // 앱 수명 동안 유지되는 썸네일 캐시
 const thumbCache = new Map()
 
+// 네이버 API 동시 요청 제한 큐 (max 3 concurrent)
+const imgQueue = {
+  running: 0,
+  max: 3,
+  pending: [],
+  async add(fn) {
+    if (this.running < this.max) {
+      this.running++
+      try { return await fn() } finally { this.running--; this._next() }
+    }
+    return new Promise((res, rej) => this.pending.push({ fn, res, rej }))
+  },
+  _next() {
+    if (this.pending.length && this.running < this.max) {
+      const { fn, res, rej } = this.pending.shift()
+      this.running++
+      fn().then(res, rej).finally(() => { this.running--; this._next() })
+    }
+  },
+}
+
 function VenueThumb({ name, teamColor }) {
   const [url, setUrl] = useState(() => thumbCache.get(name) ?? null)
 
@@ -13,14 +34,18 @@ function VenueThumb({ name, teamColor }) {
       setUrl(thumbCache.get(name))
       return
     }
-    fetch(`/api/images?query=${encodeURIComponent(name)}`)
-      .then(r => r.ok ? r.json() : [])
-      .then(items => {
-        const imgUrl = items[0]?.thumbnail ?? null
-        thumbCache.set(name, imgUrl)
-        setUrl(imgUrl)
-      })
-      .catch(() => { thumbCache.set(name, null) })
+    let cancelled = false
+    imgQueue.add(() =>
+      fetch(`/api/images?query=${encodeURIComponent(name)}`)
+        .then(r => r.ok ? r.json() : [])
+        .then(items => {
+          const imgUrl = items[0]?.thumbnail ?? null
+          thumbCache.set(name, imgUrl)
+          if (!cancelled) setUrl(imgUrl)
+        })
+        .catch(() => { thumbCache.set(name, null) })
+    )
+    return () => { cancelled = true }
   }, [name])
 
   if (url) {

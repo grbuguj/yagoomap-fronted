@@ -121,7 +121,7 @@
 
 .address {
   font-size: 11px;
-  color: var(--clr-border);
+  color: var(--clr-muted);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

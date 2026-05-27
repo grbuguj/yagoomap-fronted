@@ -300,6 +300,36 @@
   opacity: 0.55;
 }
 
+.phoneNum {
+  flex: 1;
+}
+
+.copyBtn {
+  margin-left: auto;
+  flex-shrink: 0;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--clr-muted);
+  padding: 3px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--clr-border);
+  background: var(--clr-bg);
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.copyBtn:hover {
+  background: var(--clr-primary);
+  color: #fff;
+  border-color: var(--clr-primary);
+}
+
+.copyBtnDone {
+  background: #22c55e;
+  color: #fff;
+  border-color: #22c55e;
+}
+
 .ratingRow {
   display: flex;
   align-items: center;

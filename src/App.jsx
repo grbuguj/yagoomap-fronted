@@ -230,6 +230,7 @@ function App() {
             onVenueClick={handleVenueSelect}
             userLocation={userLocation}
             onBoundsChange={handleBoundsChange}
+            sidebarOpen={sidebarOpen}
           />
 
           <button
@@ -247,9 +248,6 @@ function App() {
             </svg>
           </button>
 
-          <button className="reportBtn" onClick={() => setShowReport(true)}>
-            📍 제보하기
-          </button>
         </div>
       </div>
 

@@ -252,6 +252,25 @@
   gap: 10px;
 }
 
+.badgeGroup {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.categoryBadge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 12px;
+  border: 1.5px solid var(--clr-border);
+  color: var(--clr-muted);
+  background: var(--clr-bg);
+  white-space: nowrap;
+}
+
 .teamBadge {
   flex-shrink: 0;
   color: #fff;
@@ -259,8 +278,50 @@
   font-weight: 700;
   padding: 4px 10px;
   border-radius: 12px;
-  margin-top: 3px;
   white-space: nowrap;
+}
+
+/* ── 태그 ── */
+.tagsRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: -2px;
+}
+
+.tagChip {
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: var(--clr-bg);
+  color: var(--clr-muted);
+  border: 1px solid var(--clr-border);
+}
+
+/* ── 노트 박스 ── */
+.noteBox {
+  display: flex;
+  align-items: flex-start;
+  gap: 9px;
+  background: var(--clr-bg);
+  border-left: 3px solid;
+  border-radius: 8px;
+  padding: 11px 13px;
+  margin-top: 2px;
+}
+
+.noteIcon {
+  font-size: 15px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.noteText {
+  font-size: 13px;
+  color: var(--clr-text);
+  line-height: 1.55;
+  font-weight: 500;
 }
 
 .body {
@@ -283,7 +344,7 @@
   display: flex;
   flex-direction: column;
   gap: 5px;
-  margin-top: -2px;
+  margin-top: 6px;
 }
 
 .infoRow {
@@ -302,6 +363,9 @@
 
 .phoneNum {
   flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--clr-text);
 }
 
 .copyBtn {
@@ -334,12 +398,12 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  margin-top: 2px;
+  padding: 14px 16px 4px;
 }
 
 .stars {
   color: #f59e0b;
-  font-size: 14px;
+  font-size: 18px;
   font-weight: 700;
   letter-spacing: 1px;
 }
@@ -351,14 +415,15 @@
 
 .ratingNum {
   color: var(--clr-text);
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 800;
   margin-left: 2px;
 }
 
 .reviewCount {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--clr-muted);
+  font-weight: 500;
 }
 
 .btnRow {

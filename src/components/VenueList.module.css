@@ -111,13 +111,6 @@
   font-weight: 600;
 }
 
-.station {
-  font-size: 12px;
-  color: var(--clr-muted);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
 
 .address {
   font-size: 11px;

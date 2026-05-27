@@ -122,7 +122,6 @@ function VenueList({ venues, selectedTeams = [], onSelect, onOpenSelector }) {
               <span className={styles.name}>{venue.name}</span>
               <Stars rating={venue.rating} />
             </div>
-            <p className={styles.station}>{venue.nearStation}</p>
             <p className={styles.address}>{venue.address}</p>
           </div>
           <span className={styles.arrow}>›</span>

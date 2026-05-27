@@ -113,6 +113,16 @@ function VenueDetail({ venue, onClose, onCloseAll }) {
   const teamCfg   = TEAM_CONFIG[venue.team]
   const teamColor = teamCfg?.color || 'var(--clr-primary)'
 
+  const CATEGORY_EMOJI = {
+    '치킨': '🍗', '술집': '🍺', '포차': '🏮',
+    '피자': '🍕', '삼겹살': '🥩', '바': '🍸', '주점': '🍶',
+  }
+
+  const TAG_EMOJI = {
+    '대형 TV': '📺', '단체석': '👥', '야구 중계': '⚾',
+    '응원 분위기': '📣', '예약 추천': '📅', '야외석': '🌿',
+  }
+
   const handleKakaoMap = () =>
     window.open(`https://map.kakao.com/link/search/${encodeURIComponent(venue.name)}`, '_blank')
   const handleNaverMap = () =>
@@ -171,20 +181,43 @@ function VenueDetail({ venue, onClose, onCloseAll }) {
 
       {/* 기본 정보 */}
       <div className={styles.body}>
+
+        {/* 1. 가게명 + 카테고리 + 팀 배지 */}
         <div className={styles.nameRow}>
           <h2 className={styles.name}>{venue.name}</h2>
-          <span className={styles.teamBadge} style={{ background: teamColor }}>
-            {teamCfg?.shortName || venue.team}
-          </span>
+          <div className={styles.badgeGroup}>
+            {venue.category && (
+              <span className={styles.categoryBadge}>
+                {CATEGORY_EMOJI[venue.category] ?? ''} {venue.category}
+              </span>
+            )}
+            <span className={styles.teamBadge} style={{ background: teamColor }}>
+              {teamCfg?.shortName || venue.team}
+            </span>
+          </div>
         </div>
 
+        {/* 2. 태그 칩 */}
+        {venue.tags?.length > 0 && (
+          <div className={styles.tagsRow}>
+            {venue.tags.map(tag => (
+              <span
+                key={tag}
+                className={styles.tagChip}
+                style={{
+                  background: teamColor + '12',
+                  borderColor: teamColor + '50',
+                  color: teamColor,
+                }}
+              >
+                {TAG_EMOJI[tag] ? `${TAG_EMOJI[tag]} ` : ''}{tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* 3. 주소 + 전화 */}
         <div className={styles.infoRows}>
-          <span className={styles.infoRow}>
-            <svg className={styles.infoIcon} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="10" r="3"/><path d="M12 2a8 8 0 0 1 8 8c0 5.25-8 13-8 13S4 15.25 4 10a8 8 0 0 1 8-8z"/>
-            </svg>
-            {venue.nearStation}
-          </span>
           <span className={styles.infoRow}>
             <svg className={styles.infoIcon} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/>
@@ -207,11 +240,22 @@ function VenueDetail({ venue, onClose, onCloseAll }) {
           )}
         </div>
 
-        <div className={styles.ratingRow}>
-          <Stars rating={venue.rating} />
-          <span className={styles.reviewCount}>· 리뷰 {reviewCount}개</span>
-        </div>
+        {/* 4. 중계 확인 안내 — note 있으면 숨김 */}
+        {!venue.note && (
+          <p className={styles.notice}>
+            📞 정확한 중계 여부는 가게에 전화로 확인하세요
+          </p>
+        )}
 
+        {/* 5. 운영 메모 (note) */}
+        {venue.note && (
+          <div className={styles.noteBox} style={{ borderColor: teamColor }}>
+            <span className={styles.noteIcon} style={{ color: teamColor }}>📋</span>
+            <p className={styles.noteText}>{venue.note}</p>
+          </div>
+        )}
+
+        {/* 6. 지도 버튼 */}
         <div className={styles.btnRow}>
           <button className={`${styles.mapBtn} ${styles.mapBtnKakao}`} onClick={handleKakaoMap}>
             <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
@@ -227,14 +271,15 @@ function VenueDetail({ venue, onClose, onCloseAll }) {
           </button>
         </div>
 
-        <p className={styles.notice}>
-          📞 정확한 중계 여부는 가게에 전화로 확인하세요
-        </p>
       </div>
 
       <div className={styles.divider} />
 
-      {/* 리뷰 섹션 */}
+      {/* 별점 */}
+      <div className={styles.ratingRow}>
+        <Stars rating={venue.rating} />
+      </div>
+
       <ReviewSection venueId={venue.id} onCountChange={setReviewCount} />
 
       {/* 라이트박스 — portal로 body에 직접 렌더링 (z-index 스태킹 컨텍스트 탈출) */}

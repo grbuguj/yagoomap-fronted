@@ -8,6 +8,7 @@ import KakaoMap      from './components/KakaoMap'
 import ReportModal   from './components/ReportModal'
 import SidebarFooter from './components/SidebarFooter'
 import PolicyModal   from './components/PolicyModal'
+import WelcomeModal, { shouldShowWelcome } from './components/WelcomeModal'
 import { VENUES } from './data/venues'
 import { AVAILABLE_TEAMS } from './data/teams'
 import './App.css'
@@ -21,6 +22,7 @@ function App() {
   const [showReport,       setShowReport]       = useState(false)
   const [sidebarOpen,      setSidebarOpen]      = useState(() => window.innerWidth > 480)
   const [policyType,       setPolicyType]       = useState(null)
+  const [showWelcome,      setShowWelcome]      = useState(shouldShowWelcome)
   const [userLocation,     setUserLocation]     = useState(null)
   const [locating,         setLocating]         = useState(false)
   const [mapMoved,         setMapMoved]         = useState(false)
@@ -263,6 +265,10 @@ function App() {
           type={policyType}
           onClose={() => setPolicyType(null)}
         />
+      )}
+
+      {showWelcome && (
+        <WelcomeModal onClose={() => setShowWelcome(false)} />
       )}
     </div>
   )

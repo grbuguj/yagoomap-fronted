@@ -41,7 +41,6 @@ function KakaoMap({ venues, selectedTeam, selectedVenue, onVenueClick, userLocat
   const overlaysRef         = useRef([])  // [{ overlay, content, venueId }]
   const myLocOverlay        = useRef(null)
   const onBoundsChangeCb    = useRef(onBoundsChange)
-  const isFirstTeamRender   = useRef(true)
 
   // 콜백 ref 최신 상태 유지 (클로저 stale 방지)
   useEffect(() => { onBoundsChangeCb.current = onBoundsChange }, [onBoundsChange])
@@ -119,21 +118,6 @@ function KakaoMap({ venues, selectedTeam, selectedVenue, onVenueClick, userLocat
     map.panTo(new window.kakao.maps.LatLng(selectedVenue.lat, selectedVenue.lng))
   }, [selectedVenue])
 
-  /* ── 팀 변경 시 지도 중심 이동 (초기 마운트는 제외) ─────── */
-  useEffect(() => {
-    if (isFirstTeamRender.current) {
-      isFirstTeamRender.current = false
-      return
-    }
-    const map = mapInstance.current
-    if (!map || !selectedTeam) return
-    const cfg = TEAM_CONFIG[selectedTeam]
-    if (cfg) {
-      // panTo(애니메이션) 대신 setCenter(즉시) 사용 → 레벨 변경과 충돌 없음
-      map.setCenter(new window.kakao.maps.LatLng(cfg.stadium.lat, cfg.stadium.lng))
-      map.setLevel(9)
-    }
-  }, [selectedTeam])
 
   /* ── 사이드바 크기 변경 시 지도 리레이아웃 ──────────────── */
   useEffect(() => {

@@ -2,9 +2,9 @@
 
 export const VENUES = [
   // ── LG 트윈스 (서울) ──────────────────────────────────────────
-  { id: 1,  name: "투홀릭치킨 서초점",    address: "서울 서초구 양재동 328-12",            lat: 37.4685, lng: 127.0410, rating: 4.5, reviewCount: 72,       area: "역삼역",     team: "LG 트윈스", phone: "02-3478-1234", category: "치킨", tags: ["대형 TV", "단체석", "야구 중계"], note: "전 경기 야구 중계 가능. 단체석은 예약 추천." },
-  { id: 2,  name: "야구보러가자",          address: "서울 중랑구 면목동 601-19",            lat: 37.5816, lng: 127.0877, rating: 4.8, reviewCount: 89,           area: "건대입구역",  team: "LG 트윈스", phone: "02-2291-5678", category: "술집", tags: ["응원 분위기", "야구 중계", "예약 추천"], note: "LG 홈경기 때 특히 분위기 좋음. 예약 필수." },
-  { id: 3,  name: "트윈스포차",            address: "서울 강북구 번동 468-2",               lat: 37.6406, lng: 127.0298, rating: 4.7, reviewCount: 64,               area: "기타",       team: "LG 트윈스", phone: "02-4912-3344", category: "포차", tags: ["대형 TV", "야외석"], note: null },
+  { id: 1,  name: "투홀릭치킨 서초점",    address: "서울 서초구 양재동 328-12",            lat: 37.4685, lng: 127.0410, rating: 4.5, reviewCount: 72,       area: "역삼역",     team: "LG 트윈스", phone: "02-3478-1234", category: "치킨", tags: ["TV보유", "단체석", "야구중계"], note: "전 경기 야구 중계 가능. 단체석은 예약 추천." },
+  { id: 2,  name: "야구보러가자",          address: "서울 중랑구 면목동 601-19",            lat: 37.5816, lng: 127.0877, rating: 4.8, reviewCount: 89,           area: "건대입구역",  team: "LG 트윈스", phone: "02-2291-5678", category: "술집", tags: ["응원분위기", "야구중계", "예약추천"], note: "LG 홈경기 때 특히 분위기 좋음. 예약 필수." },
+  { id: 3,  name: "트윈스포차",            address: "서울 강북구 번동 468-2",               lat: 37.6406, lng: 127.0298, rating: 4.7, reviewCount: 64,               area: "기타",       team: "LG 트윈스", phone: "02-4912-3344", category: "포차", tags: ["TV보유", "야외석"], note: null },
   { id: 4,  name: "강남 두꺼비 1981",      address: "서울 서초구 서초동 1302-50",           lat: 37.5034, lng: 127.0226, rating: 4.6, reviewCount: 112,             area: "역삼역",     team: "LG 트윈스", phone: "02-558-1981"  },
   { id: 5,  name: "죽여주는김치찜 하남점", address: "경기도 하남시 망월동 1100",            lat: 37.5637, lng: 127.1918, rating: 4.9, reviewCount: 145,           area: "기타",       team: "LG 트윈스", phone: "031-8899-4567" },
   { id: 6,  name: "호멜포차",              address: "서울 동작구 노량진동 16-1",            lat: 37.5143, lng: 126.9393, rating: 4.5, reviewCount: 55,             area: "기타",       team: "LG 트윈스", phone: "02-813-7812"  },

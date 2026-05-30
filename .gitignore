@@ -24,5 +24,3 @@ dist-ssr
 *.sw?
 .vercel
 
-# 워크플로우 
-.github

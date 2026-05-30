@@ -13,9 +13,8 @@ import { MOCK_REVIEWS } from '../data/reviews'
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081'
 
 // ── 개발 환경 판단 ──────────────────────────────────────────────
-// VITE_API_BASE_URL 환경변수가 없으면 mock 사용 (로컬에서 백엔드 없이 개발 시)
-// 로컬에서 실제 백엔드 연동하려면 .env.local 에 VITE_API_BASE_URL=http://localhost:8081 추가
-const USE_MOCK = !import.meta.env.VITE_API_BASE_URL && import.meta.env.DEV
+// TODO: 백엔드 데이터 입력 완료 후 아래 줄을 false 로 변경
+const USE_MOCK = true
 
 // ── 백엔드 응답 → 프론트 Venue 형식 변환 ────────────────────────
 // GET /api/places 응답 기준 (2026-05-30 확인된 필드명)

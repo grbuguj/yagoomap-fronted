@@ -9,7 +9,7 @@ import ReportModal   from './components/ReportModal'
 import SidebarFooter from './components/SidebarFooter'
 import PolicyModal   from './components/PolicyModal'
 import WelcomeModal, { shouldShowWelcome } from './components/WelcomeModal'
-import { VENUES } from './data/venues'
+import { fetchVenues } from './api/venueApi'
 import { AVAILABLE_TEAMS } from './data/teams'
 import './App.css'
 
@@ -23,6 +23,11 @@ function App() {
   const [sidebarOpen,      setSidebarOpen]      = useState(() => window.innerWidth > 480)
   const [policyType,       setPolicyType]       = useState(null)
   const [showWelcome,      setShowWelcome]      = useState(shouldShowWelcome)
+
+  // ── 가게 데이터 (API or mock) ────────────────────────────────
+  const [venues,        setVenues]        = useState([])
+  const [venuesLoading, setVenuesLoading] = useState(true)
+  const [venuesError,   setVenuesError]   = useState(null)
   const [userLocation,     setUserLocation]     = useState(null)
   const [locating,         setLocating]         = useState(false)
   const [mapMoved,         setMapMoved]         = useState(false)
@@ -106,6 +111,13 @@ function App() {
     if (dy > 60 && swipeScrollTop.current === 0) setSidebarOpen(false)
   }, [])
 
+  // ── 가게 목록 로드 ──────────────────────────────────────────
+  useEffect(() => {
+    fetchVenues()
+      .then(data => { setVenues(data); setVenuesLoading(false) })
+      .catch(err  => { console.error(err); setVenuesError(err.message); setVenuesLoading(false) })
+  }, [])
+
   // ── 앱 시작 시 위치 요청 ─────────────────────────────────
   useEffect(() => {
     if (!navigator.geolocation) return
@@ -132,8 +144,7 @@ function App() {
   // ── 필터링 ───────────────────────────────────────────────
   const filteredVenues = useMemo(() => {
     if (!isAvailable) return []
-    // 빈 배열 = 전체(가용 팀), 아니면 선택 팀만
-    let list = VENUES.filter(v => selectedTeams.includes(v.team) && AVAILABLE_TEAMS.includes(v.team))
+    let list = venues.filter(v => selectedTeams.includes(v.team) && AVAILABLE_TEAMS.includes(v.team))
     if (keyword.trim()) {
       const kw = keyword.trim().toLowerCase()
       list = list.filter(v =>
@@ -148,7 +159,7 @@ function App() {
       )
     }
     return list
-  }, [selectedTeams, isAvailable, keyword, boundsFilter])
+  }, [venues, selectedTeams, isAvailable, keyword, boundsFilter])
 
   // KakaoMap에 넘길 단일 팀값 (첫 번째 선택 팀 or null)
   const primaryTeam = selectedTeams.length === 1 ? selectedTeams[0] : null
@@ -195,6 +206,31 @@ function App() {
                   onToggle={handleTeamToggle}
                   onConfirm={handleHideSelector}
                 />
+              ) : venuesLoading ? (
+                <div className="venuesLoading">
+                  {[...Array(5)].map((_, i) => (
+                    <div key={i} className="venueSkeleton">
+                      <div className="skeletonThumb" />
+                      <div className="skeletonBody">
+                        <div className="skeletonLine skeletonTitle" />
+                        <div className="skeletonLine skeletonSub" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : venuesError ? (
+                <div className="venuesError">
+                  <span>⚠️</span>
+                  <p>가게 목록을 불러오지 못했어요</p>
+                  <small>{venuesError}</small>
+                  <button onClick={() => {
+                    setVenuesLoading(true)
+                    setVenuesError(null)
+                    fetchVenues()
+                      .then(data => { setVenues(data); setVenuesLoading(false) })
+                      .catch(err  => { setVenuesError(err.message); setVenuesLoading(false) })
+                  }}>다시 시도</button>
+                </div>
               ) : (
                 <VenueList
                   venues={filteredVenues}

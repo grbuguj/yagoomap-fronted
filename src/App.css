@@ -331,3 +331,81 @@
   }
 
 }
+
+/* ── 가게 목록 로딩 스켈레톤 ──────────────────────────────────── */
+.venuesLoading {
+  padding: 12px 12px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.venueSkeleton {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--clr-bg, #f8f8f8);
+}
+
+.skeletonThumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  background: linear-gradient(90deg, #e8e8e8 25%, #f2f2f2 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+  flex-shrink: 0;
+}
+
+.skeletonBody {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skeletonLine {
+  border-radius: 6px;
+  background: linear-gradient(90deg, #e8e8e8 25%, #f2f2f2 50%, #e8e8e8 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+.skeletonTitle { height: 14px; width: 60%; }
+.skeletonSub   { height: 11px; width: 80%; }
+
+@keyframes shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ── 가게 목록 에러 상태 ──────────────────────────────────────── */
+.venuesError {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 60px 24px;
+  text-align: center;
+  color: var(--clr-muted, #888);
+}
+
+.venuesError span { font-size: 36px; }
+.venuesError p    { font-size: 14px; font-weight: 600; color: var(--clr-text, #222); margin: 0; }
+.venuesError small { font-size: 11px; opacity: 0.7; }
+
+.venuesError button {
+  margin-top: 8px;
+  padding: 8px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  background: #C30452;
+  color: #fff;
+  transition: opacity 0.15s;
+}
+
+.venuesError button:hover { opacity: 0.85; }

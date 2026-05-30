@@ -119,12 +119,19 @@ function VenueDetail({ venue, onClose, onCloseAll }) {
   }
 
   const TAG_EMOJI = {
+    // 프론트 표준 태그
     '대형 TV': '📺', '단체석': '👥', '야구 중계': '⚾',
     '응원 분위기': '📣', '예약 추천': '📅', '야외석': '🌿',
+    // 백엔드 태그 포맷 대응 (형식 통일 전 임시) — TODO: 백엔드와 태그명 통일 후 제거
+    'TV보유': '📺', '야구중계': '⚾', '단체석가능': '👥', '야외테라스': '🌿',
   }
 
+  // kakaoPlaceUrl 있으면 직접 링크, 없으면 이름 검색으로 fallback
   const handleKakaoMap = () =>
-    window.open(`https://map.kakao.com/link/search/${encodeURIComponent(venue.name)}`, '_blank')
+    window.open(
+      venue.kakaoPlaceUrl || `https://map.kakao.com/link/search/${encodeURIComponent(venue.name)}`,
+      '_blank'
+    )
   const handleNaverMap = () =>
     window.open(`https://map.naver.com/v5/search/${encodeURIComponent(venue.name)}`, '_blank')
 

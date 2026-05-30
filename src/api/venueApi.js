@@ -13,25 +13,28 @@ import { MOCK_REVIEWS } from '../data/reviews'
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081'
 
 // ── 개발 환경 판단 ──────────────────────────────────────────────
-// BASE_URL이 로컬호스트이고 DEV 모드면 mock 사용
-const USE_MOCK = BASE_URL.includes('localhost') && import.meta.env.DEV
+// VITE_API_BASE_URL 환경변수가 없으면 mock 사용 (로컬에서 백엔드 없이 개발 시)
+// 로컬에서 실제 백엔드 연동하려면 .env.local 에 VITE_API_BASE_URL=http://localhost:8081 추가
+const USE_MOCK = !import.meta.env.VITE_API_BASE_URL && import.meta.env.DEV
 
 // ── 백엔드 응답 → 프론트 Venue 형식 변환 ────────────────────────
-// 백엔드 필드명 확정 후 여기만 수정하면 됨
+// GET /api/places 응답 기준 (2026-05-30 확인된 필드명)
 function mapPlace(p) {
   return {
-    id:          p.id,
-    name:        p.name,
-    team:        p.team,                        // "LG 트윈스" 풀네임 기대
-    address:     p.address,
-    lat:         p.lat          ?? p.latitude,  // lat 또는 latitude
-    lng:         p.lng          ?? p.longitude, // lng 또는 longitude
-    phone:       p.phone        ?? null,
-    rating:      p.rating       ?? 0,
-    reviewCount: p.reviewCount  ?? p.review_count ?? 0,
-    category:    p.category     ?? null,
-    tags:        Array.isArray(p.tags) ? p.tags : [],
-    note:        p.note         ?? null,
+    id:             p.id,
+    name:           p.name,
+    team:           p.team,                         // "LG 트윈스" 풀네임
+    address:        p.roadAddress ?? p.address,     // 도로명주소 우선
+    lat:            p.latitude,                     // ← 백엔드 필드명
+    lng:            p.longitude,                    // ← 백엔드 필드명
+    phone:          p.phone        ?? null,
+    rating:         p.rating       ?? 0,
+    reviewCount:    p.reviewCount  ?? 0,
+    category:       p.category     ?? null,
+    tags:           Array.isArray(p.tags) ? p.tags : [],
+    note:           p.note         ?? null,
+    kakaoPlaceUrl:  p.kakaoPlaceUrl ?? null,        // 카카오맵 직접 링크
+    district:       p.district     ?? null,         // 지역구 (향후 지역 필터용)
   }
 }
 

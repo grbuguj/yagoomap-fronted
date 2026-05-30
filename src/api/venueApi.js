@@ -52,13 +52,24 @@ export async function fetchVenues() {
     return [...VENUES]
   }
 
-  const res = await fetch(`${BASE_URL}/api/places`)
-  if (!res.ok) throw new Error(`가게 목록 조회 실패: ${res.status}`)
+  try {
+    const res = await fetch(`${BASE_URL}/api/places`)
+    if (!res.ok) throw new Error(`${res.status}`)
 
-  const data = await res.json()
-  // 배열 직접 응답 또는 { data: [...] } / { content: [...] } wrapping 모두 대응
-  const list = Array.isArray(data) ? data : (data.data ?? data.content ?? [])
-  return list.map(mapPlace)
+    const data = await res.json()
+    const list = Array.isArray(data) ? data : (data.data ?? data.content ?? [])
+
+    // 백엔드 데이터가 아직 없으면 mock fallback
+    if (list.length === 0) {
+      console.warn('[야구맵] 백엔드 데이터 없음 → mock 데이터 사용')
+      return [...VENUES]
+    }
+
+    return list.map(mapPlace)
+  } catch (err) {
+    console.warn('[야구맵] API 실패 → mock 데이터 사용:', err.message)
+    return [...VENUES]
+  }
 }
 
 /* ── 리뷰 조회 ──────────────────────────────────────────────────

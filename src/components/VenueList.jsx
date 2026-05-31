@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { TEAM_CONFIG } from '../data/teams'
+import { TEAM_CONFIG, isMixedTeam } from '../data/teams'
 import styles from './VenueList.module.css'
 
 // 앱 수명 동안 유지되는 썸네일 캐시
@@ -112,6 +112,7 @@ function VenueList({ venues, selectedTeams = [], onSelect, onOpenSelector }) {
 
       {venues.map(venue => {
         const vTeamColor = TEAM_CONFIG[venue.team]?.color || teamColor
+        const mixed      = isMixedTeam(venue.team)
         return (
         <li key={venue.id} className={styles.item} onClick={() => onSelect(venue)}>
           <div className={styles.itemLeft}>
@@ -119,7 +120,10 @@ function VenueList({ venues, selectedTeams = [], onSelect, onOpenSelector }) {
           </div>
           <div className={styles.itemBody}>
             <div className={styles.nameRow}>
-              <span className={styles.name}>{venue.name}</span>
+              <span className={styles.nameWrap}>
+                <span className={styles.name}>{venue.name}</span>
+                {mixed && <span className={styles.mixedTag}>🍻 혼합</span>}
+              </span>
               <Stars rating={venue.rating} />
             </div>
             <p className={styles.address}>{venue.address}</p>

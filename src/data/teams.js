@@ -15,3 +15,13 @@ export const TEAMS = [
 export const AVAILABLE_TEAMS = ['LG 트윈스']
 
 export const TEAM_CONFIG = Object.fromEntries(TEAMS.map(t => [t.key, t]))
+
+// 특정 구단 전용이 아닌 "혼합 응원"(모든 경기 중계) 가게
+export const MIXED_TEAM  = '혼합 응원'
+export const MIXED_COLOR = '#6b7280'   // 중립 회색 핀/배지
+export const MIXED_EMOJI = '🍻'
+
+// 10개 KBO 구단에 속하지 않으면 혼합 응원으로 취급
+export function isMixedTeam(team) {
+  return !TEAM_CONFIG[team]
+}

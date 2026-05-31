@@ -1,4 +1,4 @@
-import { TEAMS } from '../data/teams'
+import { TEAMS, MIXED_TEAM, MIXED_COLOR, MIXED_EMOJI } from '../data/teams'
 import styles from './TeamSelector.module.css'
 
 const TEAM_EMOJI = {
@@ -14,7 +14,10 @@ const TEAM_EMOJI = {
   '키움 히어로즈': '🦸',
 }
 
-function TeamSelector({ selectedTeams, onToggle, onConfirm, counts = {}, availableTeams = [] }) {
+function TeamSelector({ selectedTeams, onToggle, onConfirm, counts = {}, availableTeams = [], mixedCount = 0 }) {
+  const mixedAvailable = mixedCount > 0
+  const mixedSelected  = selectedTeams.includes(MIXED_TEAM)
+
   return (
     <div className={styles.wrap}>
       <p className={styles.heading}>⚾ 구단 선택</p>
@@ -59,6 +62,38 @@ function TeamSelector({ selectedTeams, onToggle, onConfirm, counts = {}, availab
             </button>
           )
         })}
+
+        {/* 혼합 응원 — 특정 구단 전용이 아닌, 모든 경기 중계 가게 */}
+        <button
+          className={`${styles.card} ${mixedAvailable ? styles.cardAvailable : styles.cardSoon} ${mixedSelected ? styles.cardSelected : ''}`}
+          onClick={() => mixedAvailable && onToggle(MIXED_TEAM)}
+          disabled={!mixedAvailable}
+          style={mixedSelected ? { borderColor: MIXED_COLOR, background: MIXED_COLOR + '0d' } : {}}
+        >
+          {mixedSelected && (
+            <span className={styles.check} style={{ background: MIXED_COLOR }}>✓</span>
+          )}
+          <span className={styles.emoji}>{MIXED_EMOJI}</span>
+          <span
+            className={styles.badge}
+            style={{ background: mixedAvailable ? MIXED_COLOR : '#ccc' }}
+          >
+            혼합
+          </span>
+          <span className={styles.teamName}>혼합 응원</span>
+          <span className={styles.count}>
+            {mixedAvailable ? `${mixedCount}곳 등록` : '준비중'}
+          </span>
+
+          {mixedAvailable && (
+            <span
+              className={styles.listBtn}
+              onClick={e => { e.stopPropagation(); onConfirm(MIXED_TEAM) }}
+            >
+              목록 보기 ›
+            </span>
+          )}
+        </button>
       </div>
     </div>
   )

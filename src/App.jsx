@@ -10,7 +10,7 @@ import SidebarFooter from './components/SidebarFooter'
 import PolicyModal   from './components/PolicyModal'
 import WelcomeModal, { shouldShowWelcome } from './components/WelcomeModal'
 import { fetchVenues } from './api/venueApi'
-import { TEAMS } from './data/teams'
+import { TEAMS, MIXED_TEAM, isMixedTeam } from './data/teams'
 import './App.css'
 
 function App() {
@@ -51,15 +51,24 @@ function App() {
     [teamCounts]
   )
 
-  // 데이터 첫 로드 시 가용 팀 전체 선택 (1회)
+  // 혼합 응원(특정 구단 전용 아님) 가게 수
+  const mixedCount = useMemo(
+    () => venues.filter(v => isMixedTeam(v.team)).length,
+    [venues]
+  )
+
+  // 데이터 첫 로드 시 가용 팀(+혼합) 전체 선택 (1회)
   useEffect(() => {
-    if (!teamsInitedRef.current && availableTeams.length > 0) {
-      setSelectedTeams(availableTeams)
+    if (!teamsInitedRef.current && (availableTeams.length > 0 || mixedCount > 0)) {
+      setSelectedTeams([...availableTeams, ...(mixedCount > 0 ? [MIXED_TEAM] : [])])
       teamsInitedRef.current = true
     }
-  }, [availableTeams])
+  }, [availableTeams, mixedCount])
 
-  const isAvailable = selectedTeams.some(t => availableTeams.includes(t))
+  // 일반 구단 선택 여부 / 혼합 선택 여부
+  const teamSelected  = selectedTeams.some(t => availableTeams.includes(t))
+  const mixedSelected = selectedTeams.includes(MIXED_TEAM) && mixedCount > 0
+  const isAvailable   = teamSelected || mixedSelected
 
   // ── 팀 토글 ──────────────────────────────────────────────
   const handleTeamToggle = useCallback((teamKey) => {
@@ -163,7 +172,12 @@ function App() {
   // ── 필터링 ───────────────────────────────────────────────
   const filteredVenues = useMemo(() => {
     if (!isAvailable) return []
-    let list = venues.filter(v => selectedTeams.includes(v.team) && availableTeams.includes(v.team))
+    // 하이브리드: 일반 구단을 하나라도 고르면 혼합 응원 가게도 함께 노출.
+    //            혼합 카드만 콕 집어 들어오면(팀 미선택) 혼합 가게만 노출.
+    let list = venues.filter(v => {
+      if (isMixedTeam(v.team)) return mixedSelected || teamSelected
+      return selectedTeams.includes(v.team) && availableTeams.includes(v.team)
+    })
     if (keyword.trim()) {
       const kw = keyword.trim().toLowerCase()
       list = list.filter(v =>
@@ -178,7 +192,7 @@ function App() {
       )
     }
     return list
-  }, [venues, selectedTeams, isAvailable, availableTeams, keyword, boundsFilter])
+  }, [venues, selectedTeams, isAvailable, availableTeams, teamSelected, mixedSelected, keyword, boundsFilter])
 
   // KakaoMap에 넘길 단일 팀값 (첫 번째 선택 팀 or null)
   const primaryTeam = selectedTeams.length === 1 ? selectedTeams[0] : null
@@ -226,6 +240,7 @@ function App() {
                   onConfirm={handleHideSelector}
                   counts={teamCounts}
                   availableTeams={availableTeams}
+                  mixedCount={mixedCount}
                 />
               ) : venuesLoading ? (
                 <div className="venuesLoading">

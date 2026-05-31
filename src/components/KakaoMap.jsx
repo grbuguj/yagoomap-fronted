@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react'
-import { TEAM_CONFIG } from '../data/teams'
+import { TEAM_CONFIG, MIXED_COLOR } from '../data/teams'
 import styles from './KakaoMap.module.css'
 
 // 레이블에 표시할 가게 이름 (너무 길면 자름)
@@ -10,8 +10,8 @@ function labelText(name) {
 function createMarkerContent(venue) {
   const cfg       = TEAM_CONFIG[venue.team]
   const teamClass = cfg?.markerClass || ''
-  const short     = cfg?.shortName || '⚾'
-  const color     = cfg?.color || '#888'
+  const short     = cfg?.shortName || '⚾'   // 혼합 응원 → ⚾ 중립 마커
+  const color     = cfg?.color || MIXED_COLOR
 
   const div = document.createElement('div')
   div.className = `ymap-marker ${teamClass}`.trim()

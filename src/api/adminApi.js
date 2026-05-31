@@ -175,10 +175,24 @@ export function deletePlace(placeId) {
 }
 
 /* ── 구단 목록 (teamId 매핑 소스) ────────────────────────────────
- * GET /api/place-filters → { teams: [{ teamId, team }], districts, categories, tags }
- * teamId 는 하드코딩하지 않고 백엔드 필터에서 가져온다.
+ * GET /api/place-filters
+ * ⚠️ 명세는 teams:[{teamId,team}] 였으나 실제 응답은 teams:["LG 트윈스"] (문자열 배열).
+ *    백엔드가 객체 형태로 주면 그대로 사용하고, 문자열이면 아래 매핑으로 teamId 보강.
+ *    (라이브 데이터 확인: LG=1, 한화=2, 롯데=3)
  */
+const KBO_TEAM_IDS = {
+  'LG 트윈스': 1,
+  '한화 이글스': 2,
+  '롯데 자이언츠': 3,
+  // 그 외 구단 ID는 백엔드 확인 필요. place-filters가 {teamId,team} 객체를 주면 자동 대체됨.
+}
+
 export async function fetchTeams() {
   const data = await request('/api/place-filters')
-  return Array.isArray(data?.teams) ? data.teams : []
+  const raw = Array.isArray(data?.teams) ? data.teams : []
+  return raw.map(t =>
+    typeof t === 'string'
+      ? { team: t, teamId: KBO_TEAM_IDS[t] ?? null }
+      : { team: t.team, teamId: t.teamId }
+  )
 }

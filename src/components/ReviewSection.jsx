@@ -27,6 +27,12 @@ function StarPicker({ value, onChange }) {
   )
 }
 
+/* ISO("2026-05-29T16:28:53") → "2026.05.29", 이미 "2026.05.29" 형태면 그대로 */
+function formatReviewDate(v) {
+  if (!v) return ''
+  return v.includes('T') ? v.slice(0, 10).replace(/-/g, '.') : v
+}
+
 /* ── 리뷰 카드 ──────────────────────────────────────── */
 function ReviewItem({ review }) {
   const filled = '★'.repeat(review.rating)
@@ -39,7 +45,7 @@ function ReviewItem({ review }) {
           <span className={styles.itemStarsFilled}>{filled}</span>
           <span className={styles.itemStarsEmpty}>{empty}</span>
         </span>
-        <span className={styles.itemDate}>{review.createdAt}</span>
+        <span className={styles.itemDate}>{formatReviewDate(review.createdAt)}</span>
       </div>
       <p className={styles.itemContent}>{review.content}</p>
     </div>

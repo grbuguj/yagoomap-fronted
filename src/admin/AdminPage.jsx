@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import styles from './AdminPage.module.css'
 import {
   fetchDashboard,
@@ -82,8 +82,16 @@ function ApproveModal({ title, initial, teams, withNoteTags, onConfirm, onClose 
   const [form, setForm] = useState(initial)
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
+  // 드롭다운에 없는 사전선택 구단(예: 제보의 teamId)도 잃지 않도록 옵션에 합류
+  const teamOptions = useMemo(() => {
+    if (form.teamId != null && !teams.some(t => t.teamId === form.teamId)) {
+      return [{ teamId: form.teamId, team: form.team || `구단 #${form.teamId}` }, ...teams]
+    }
+    return teams
+  }, [teams, form.teamId, form.team])
+
   const handleTeam = (e) => {
-    const found = teams.find(t => t.teamId === Number(e.target.value))
+    const found = teamOptions.find(t => t.teamId === Number(e.target.value))
     setForm(f => ({ ...f, teamId: found?.teamId ?? null, team: found?.team ?? '' }))
   }
 
@@ -130,7 +138,7 @@ function ApproveModal({ title, initial, teams, withNoteTags, onConfirm, onClose 
               <label className={styles.label}>구단 *</label>
               <select className={styles.select} value={form.teamId ?? ''} onChange={handleTeam} required>
                 <option value="" disabled>구단 선택</option>
-                {teams.map(t => <option key={t.teamId} value={t.teamId}>{t.team}</option>)}
+                {teamOptions.map(t => <option key={t.teamId} value={t.teamId}>{t.team}</option>)}
               </select>
             </div>
             {withNoteTags && (
@@ -175,8 +183,16 @@ function PlaceModal({ initial, teams, onClose, onSubmit }) {
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }))
 
+  // 수정 대상의 구단이 드롭다운(현재 LG만)에 없어도 유지
+  const teamOptions = useMemo(() => {
+    if (form.teamId != null && !teams.some(t => t.teamId === form.teamId)) {
+      return [{ teamId: form.teamId, team: form.team || `구단 #${form.teamId}` }, ...teams]
+    }
+    return teams
+  }, [teams, form.teamId, form.team])
+
   const handleTeam = (e) => {
-    const found = teams.find(t => t.teamId === Number(e.target.value))
+    const found = teamOptions.find(t => t.teamId === Number(e.target.value))
     setForm(f => ({ ...f, teamId: found?.teamId ?? null, team: found?.team ?? '' }))
   }
 
@@ -228,20 +244,21 @@ function PlaceModal({ initial, teams, onClose, onSubmit }) {
               <label className={styles.label}>구단 *</label>
               <select className={styles.select} value={form.teamId ?? ''} onChange={handleTeam} required>
                 <option value="" disabled>구단 선택</option>
-                {teams.map(t => <option key={t.teamId} value={t.teamId}>{t.team}</option>)}
+                {teamOptions.map(t => <option key={t.teamId} value={t.teamId}>{t.team}</option>)}
               </select>
             </div>
 
             <div className={styles.formGroup}>
               <label className={styles.label}>카테고리</label>
-              <select className={styles.select} value={form.category} onChange={e => set('category', e.target.value)}>
-                {['술집', '치킨', '호프', '맥주', '스포츠바', '기타'].map(c => <option key={c}>{c}</option>)}
-              </select>
+              <input className={styles.input} value={form.category ?? ''} onChange={e => set('category', e.target.value)} placeholder="예) 포차, 펍, 술집, 치킨" list="category-options" />
+              <datalist id="category-options">
+                {['술집', '포차', '펍', '치킨', '호프', '맥주', '바', '스포츠바', '기타'].map(c => <option key={c} value={c} />)}
+              </datalist>
             </div>
 
             <div className={styles.formGroup}>
               <label className={styles.label}>전화번호</label>
-              <input className={styles.input} value={form.phone} onChange={e => set('phone', e.target.value)} placeholder="02-1234-5678" />
+              <input className={styles.input} value={form.phone ?? ''} onChange={e => set('phone', e.target.value)} placeholder="02-1234-5678" />
             </div>
 
             <div className={styles.formGroup}>
@@ -254,12 +271,12 @@ function PlaceModal({ initial, teams, onClose, onSubmit }) {
 
             <div className={styles.formGroup}>
               <label className={styles.label}>인스타그램 URL</label>
-              <input className={styles.input} value={form.instagramUrl} onChange={e => set('instagramUrl', e.target.value)} placeholder="https://instagram.com/..." />
+              <input className={styles.input} value={form.instagramUrl ?? ''} onChange={e => set('instagramUrl', e.target.value)} placeholder="https://instagram.com/..." />
             </div>
 
             <div className={styles.formGroup}>
               <label className={styles.label}>네이버 지도 URL</label>
-              <input className={styles.input} value={form.naverMapUrl} onChange={e => set('naverMapUrl', e.target.value)} placeholder="https://map.naver.com/..." />
+              <input className={styles.input} value={form.naverMapUrl ?? ''} onChange={e => set('naverMapUrl', e.target.value)} placeholder="https://map.naver.com/..." />
             </div>
 
             <div className={styles.formGroupFull}>
@@ -269,7 +286,7 @@ function PlaceModal({ initial, teams, onClose, onSubmit }) {
 
             <div className={styles.formGroupFull}>
               <label className={styles.label}>메모</label>
-              <textarea className={styles.textarea} value={form.note} onChange={e => set('note', e.target.value)} placeholder="운영 관련 메모" />
+              <textarea className={styles.textarea} value={form.note ?? ''} onChange={e => set('note', e.target.value)} placeholder="운영 관련 메모" />
             </div>
           </div>
 
@@ -637,7 +654,9 @@ function CandidateManagement({ teams }) {
                   <td>
                     {c.mapLink
                       ? <a href={c.mapLink} target="_blank" rel="noreferrer" className={styles.link}>카카오맵 ↗</a>
-                      : '-'}
+                      : c.sourceUrl
+                        ? <a href={c.sourceUrl} target="_blank" rel="noreferrer" className={styles.link}>출처 ↗</a>
+                        : '-'}
                   </td>
                   <td>{formatDate(c.collectedAt || c.createdAt)}</td>
                   <td><Badge status={c.status} /></td>

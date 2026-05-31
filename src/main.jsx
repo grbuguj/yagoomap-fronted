@@ -3,13 +3,13 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
-import AdminPage from './admin/AdminPage.jsx'
+import AdminGate from './admin/AdminGate.jsx'
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>
       <Routes>
-        <Route path="/admin/*" element={<AdminPage />} />
+        <Route path="/admin/*" element={<AdminGate />} />
         <Route path="/*" element={<App />} />
       </Routes>
     </BrowserRouter>

@@ -57,34 +57,33 @@ function App() {
     [venues]
   )
 
-  // 데이터 첫 로드 시 가용 팀(+혼합) 전체 선택 (1회)
+  // 선택 가능한 전체 항목 (가용 구단 + 혼합)
+  const allSelectable = useMemo(
+    () => [...availableTeams, ...(mixedCount > 0 ? [MIXED_TEAM] : [])],
+    [availableTeams, mixedCount]
+  )
+
+  // 데이터 첫 로드 시 전체 선택 → 선택 화면 뒤 지도에 모든 마커 노출 (1회)
   useEffect(() => {
-    if (!teamsInitedRef.current && (availableTeams.length > 0 || mixedCount > 0)) {
-      setSelectedTeams([...availableTeams, ...(mixedCount > 0 ? [MIXED_TEAM] : [])])
+    if (!teamsInitedRef.current && allSelectable.length > 0) {
+      setSelectedTeams(allSelectable)
       teamsInitedRef.current = true
     }
-  }, [availableTeams, mixedCount])
+  }, [allSelectable])
 
   // 일반 구단 선택 여부 / 혼합 선택 여부
   const teamSelected  = selectedTeams.some(t => availableTeams.includes(t))
   const mixedSelected = selectedTeams.includes(MIXED_TEAM) && mixedCount > 0
   const isAvailable   = teamSelected || mixedSelected
 
-  // ── 팀 토글 ──────────────────────────────────────────────
-  const handleTeamToggle = useCallback((teamKey) => {
-    setSelectedTeams(prev => {
-      if (prev.includes(teamKey)) return prev.filter(t => t !== teamKey)
-      return [...prev, teamKey]
-    })
-  }, [])
-
   const handleShowSelector  = useCallback(() => {
     setShowTeamSelector(true)
     setSelectedVenue(null)
-  }, [])
+    setSelectedTeams(allSelectable)   // 선택 화면 = 전체 지도 보기
+  }, [allSelectable])
 
   const handleHideSelector = useCallback((teamKey) => {
-    // "목록 보기"로 특정 구단을 콕 집어 들어온 경우 → 그 구단만 표시
+    // 구단/혼합 카드를 탭해 들어온 경우 → 그 항목만 표시
     if (typeof teamKey === 'string') setSelectedTeams([teamKey])
     setShowTeamSelector(false)
     setKeyword('')
@@ -235,8 +234,6 @@ function App() {
                 />
               ) : showTeamSelector ? (
                 <TeamSelector
-                  selectedTeams={selectedTeams}
-                  onToggle={handleTeamToggle}
                   onConfirm={handleHideSelector}
                   counts={teamCounts}
                   availableTeams={availableTeams}

@@ -2,7 +2,7 @@
   padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
   padding-bottom: 24px;
 }
 
@@ -12,6 +12,81 @@
   color: var(--clr-muted);
 }
 
+/* ── 혼합 응원 배너 (상단 풀폭) ───────────────────────────── */
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 16px;
+  border-radius: 14px;
+  border: 1.5px solid var(--clr-border);
+  background: linear-gradient(180deg, #fafbfc 0%, #f3f4f6 100%);
+  text-align: left;
+  transition: box-shadow 0.15s, transform 0.1s;
+}
+
+.bannerOn {
+  cursor: pointer;
+}
+
+.bannerOn:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.09);
+  transform: translateY(-1px);
+}
+
+.bannerOn:active {
+  transform: translateY(0);
+}
+
+.bannerSoon {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.bannerEmoji {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.bannerText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.bannerName {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--clr-text);
+}
+
+.bannerSub {
+  font-size: 11px;
+  color: var(--clr-muted);
+}
+
+.bannerRight {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.bannerCount {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--clr-muted);
+}
+
+.bannerGo {
+  font-size: 12.5px;
+  font-weight: 800;
+  color: #6b7280;
+}
+
+/* ── 구단 카드 그리드 (컴팩트) ────────────────────────────── */
 .grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -21,15 +96,14 @@
 .card {
   position: relative;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  padding: 14px;
-  border-radius: 14px;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border-radius: 12px;
   border: 1.5px solid var(--clr-border);
   background: #fff;
   text-align: left;
-  transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s, background 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s, transform 0.1s;
 }
 
 .cardAvailable {
@@ -45,44 +119,22 @@
   transform: translateY(0);
 }
 
-.cardSelected {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-}
-
 .cardSoon {
-  opacity: 0.38;
+  opacity: 0.4;
   cursor: default;
 }
 
-/* 체크 뱃지 */
-.check {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  color: #fff;
-  font-size: 11px;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 .emoji {
-  font-size: 26px;
+  font-size: 21px;
   line-height: 1;
-  margin-bottom: 2px;
+  flex-shrink: 0;
 }
 
-.badge {
-  color: #fff;
-  font-size: 10px;
-  font-weight: 800;
-  padding: 2px 8px;
-  border-radius: 20px;
-  letter-spacing: 0.3px;
+.cardText {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
 }
 
 .teamName {
@@ -90,27 +142,20 @@
   font-weight: 700;
   color: var(--clr-text);
   line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .count {
-  font-size: 11.5px;
+  font-size: 11px;
   color: var(--clr-muted);
   font-weight: 500;
 }
 
-/* 카드 내 목록 보기 버튼 */
-.listBtn {
-  margin-top: 4px;
-  font-size: 11.5px;
-  font-weight: 700;
-  color: var(--clr-primary);
-  padding: 4px 0 0;
-  border-top: 1px solid var(--clr-border);
-  width: 100%;
-  display: block;
-  transition: opacity 0.1s;
-}
-
-.listBtn:hover {
-  opacity: 0.7;
+.cardArrow {
+  margin-left: auto;
+  font-size: 16px;
+  color: var(--clr-border);
+  flex-shrink: 0;
 }

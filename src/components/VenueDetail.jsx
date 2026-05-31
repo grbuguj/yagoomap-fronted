@@ -5,6 +5,19 @@ import { fetchImages } from '../api/venueApi'
 import ReviewSection from './ReviewSection'
 import styles from './VenueDetail.module.css'
 
+// 외부 이미지(블로그/뉴스 등)는 403·mixed-content·인증서오류로 자주 깨짐.
+// 1순위 src 실패 시 data-fallback URL로 1회 폴백, 그래도 실패하면 깔끔하게 숨김.
+function handleImgError(e) {
+  const img = e.currentTarget
+  const alt = img.getAttribute('data-fallback')
+  if (alt && img.src !== alt) {
+    img.removeAttribute('data-fallback')
+    img.src = alt
+  } else {
+    img.style.visibility = 'hidden'
+  }
+}
+
 function Stars({ rating }) {
   const full  = Math.floor(rating)
   const empty = 5 - full
@@ -45,9 +58,11 @@ function Lightbox({ images, index, onClose, onPrev, onNext }) {
       {/* 이미지 */}
       <img
         src={images[index]?.link || images[index]?.thumbnail}
+        data-fallback={images[index]?.thumbnail || ''}
         alt={`이미지 ${index + 1}`}
         className={styles.lightboxImg}
         onClick={e => e.stopPropagation()}
+        onError={handleImgError}
       />
 
       {/* 다음 */}
@@ -154,7 +169,12 @@ function VenueDetail({ venue, onClose, onCloseAll }) {
         {hasImgs ? (
           <div className={styles.gallery}>
             <button className={styles.galleryMain} onClick={() => openLightbox(0)}>
-              <img src={venueImgs[0].link || venueImgs[0].thumbnail} alt={venue.name} />
+              <img
+                src={venueImgs[0].thumbnail || venueImgs[0].link}
+                data-fallback={venueImgs[0].link || ''}
+                alt={venue.name}
+                onError={handleImgError}
+              />
             </button>
             <div className={styles.galleryGrid}>
               {[1, 2, 3, 4].map(i => (
@@ -165,7 +185,12 @@ function VenueDetail({ venue, onClose, onCloseAll }) {
                   style={{ background: teamColor + '20' }}
                 >
                   {venueImgs[i] ? (
-                    <img src={venueImgs[i].link || venueImgs[i].thumbnail} alt={`${venue.name} ${i + 1}`} />
+                    <img
+                      src={venueImgs[i].thumbnail || venueImgs[i].link}
+                      data-fallback={venueImgs[i].link || ''}
+                      alt={`${venue.name} ${i + 1}`}
+                      onError={handleImgError}
+                    />
                   ) : null}
                 </button>
               ))}

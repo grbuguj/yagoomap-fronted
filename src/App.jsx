@@ -15,7 +15,8 @@ import './App.css'
 
 function App() {
   // 초기값: 가게 데이터 로드 후 가용 팀 자동 선택 (아래 effect)
-  const [selectedTeams,    setSelectedTeams]    = useState([])
+  const [selectedTeams,    setSelectedTeams]    = useState([])  // 구단선택 화면의 체크 상태(기억됨)
+  const [viewTeams,        setViewTeams]        = useState([])  // 목록/지도에 실제로 보여줄 팀(목록보기로 진입 시)
   const [showTeamSelector, setShowTeamSelector] = useState(true)
   const [keyword,          setKeyword]          = useState('')
   const [selectedVenue,    setSelectedVenue]    = useState(null)
@@ -65,9 +66,14 @@ function App() {
     }
   }, [availableTeams, mixedCount])
 
+  // 현재 목록/지도에 적용할 팀 집합
+  //  - 구단선택 화면: 체크된 팀들(다중) → 지도에 실시간 반영
+  //  - 목록 화면: 목록보기로 콕 집어 들어온 팀(viewTeams)만
+  const activeTeams = showTeamSelector ? selectedTeams : viewTeams
+
   // 일반 구단 선택 여부 / 혼합 선택 여부
-  const teamSelected  = selectedTeams.some(t => availableTeams.includes(t))
-  const mixedSelected = selectedTeams.includes(MIXED_TEAM) && mixedCount > 0
+  const teamSelected  = activeTeams.some(t => availableTeams.includes(t))
+  const mixedSelected = activeTeams.includes(MIXED_TEAM) && mixedCount > 0
   const isAvailable   = teamSelected || mixedSelected
 
   // ── 팀 토글 ──────────────────────────────────────────────
@@ -85,7 +91,8 @@ function App() {
 
   const handleHideSelector = useCallback((teamKey) => {
     // "목록 보기"로 특정 구단을 콕 집어 들어온 경우 → 그 구단만 표시
-    if (typeof teamKey === 'string') setSelectedTeams([teamKey])
+    // 체크 상태(selectedTeams)는 건드리지 않고 viewTeams만 바꿔 체크를 기억
+    if (typeof teamKey === 'string') setViewTeams([teamKey])
     setShowTeamSelector(false)
     setKeyword('')
     setBoundsFilter(null)
@@ -181,7 +188,7 @@ function App() {
     // (구단 목록에는 그 구단 가게만; 혼합은 상단 전용 버튼으로 접근)
     let list = venues.filter(v => {
       if (isMixedTeam(v.team)) return mixedSelected
-      return selectedTeams.includes(v.team) && availableTeams.includes(v.team)
+      return activeTeams.includes(v.team) && availableTeams.includes(v.team)
     })
     if (keyword.trim()) {
       const kw = keyword.trim().toLowerCase()
@@ -197,10 +204,10 @@ function App() {
       )
     }
     return list
-  }, [venues, selectedTeams, isAvailable, availableTeams, mixedSelected, keyword, boundsFilter])
+  }, [venues, activeTeams, isAvailable, availableTeams, mixedSelected, keyword, boundsFilter])
 
   // KakaoMap에 넘길 단일 팀값 (첫 번째 선택 팀 or null)
-  const primaryTeam = selectedTeams.length === 1 ? selectedTeams[0] : null
+  const primaryTeam = activeTeams.length === 1 ? activeTeams[0] : null
 
   return (
     <div className="app">
@@ -275,7 +282,7 @@ function App() {
               ) : (
                 <VenueList
                   venues={filteredVenues}
-                  selectedTeams={selectedTeams}
+                  selectedTeams={viewTeams}
                   onSelect={handleVenueSelect}
                   onOpenSelector={handleShowSelector}
                 />

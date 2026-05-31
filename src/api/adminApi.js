@@ -1,13 +1,14 @@
 /**
  * 관리자 API 레이어
  *
- * venueApi.js 와 동일하게 상대경로(/api/*) 사용 → CloudFront 가 백엔드(EC2)로 프록시.
- * 절대경로(http://EC2:8081)로 박으면 HTTPS 페이지에서 Mixed Content 차단됨.
+ * venueApi.js 와 동일한 BASE_URL 전략 사용.
+ *   운영: VITE_API_BASE_URL = https://api.야구맵.kr (백엔드 HTTPS + CORS)
+ *   로컬: env 미설정 → '' → vite 프록시(/api → localhost:8081)
  *
  * 명세서 기준 (2026-05-31 확인). 백엔드 필드명이 바뀌면 이 파일만 수정.
  */
 
-const BASE_URL = ''
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
 
 // ── 공통 fetch 래퍼 ─────────────────────────────────────────────
 async function request(path, { method = 'GET', body } = {}) {

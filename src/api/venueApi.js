@@ -11,12 +11,10 @@ import { VENUES }       from '../data/venues'
 import { MOCK_REVIEWS } from '../data/reviews'
 
 // ── API BASE URL ────────────────────────────────────────────────
-// 상대경로('') 사용 → 같은 HTTPS 도메인의 /api/* 로 요청.
-//   - 로컬 개발: vite.config.js 프록시가 /api → localhost:8081 로 전달
-//   - 운영: CloudFront 가 /api/* 를 백엔드(EC2)로 프록시
-// 백엔드가 HTTP 전용이라 절대경로(http://EC2:8081)로 박으면
-// HTTPS 페이지에서 Mixed Content 로 차단됨 → 반드시 상대경로 유지.
-const BASE_URL = ''
+// 운영: VITE_API_BASE_URL = https://api.야구맵.kr (백엔드 HTTPS, Let's Encrypt 인증서)
+//       빌드 시 GitHub Actions secret 으로 주입됨. 백엔드에 CORS 설정 완료.
+// 로컬 개발: env 미설정 → '' → 상대경로 → vite.config.js 프록시(/api → localhost:8081)
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''
 
 // ── 개발 환경 판단 ──────────────────────────────────────────────
 const USE_MOCK = false

@@ -20,8 +20,10 @@ jobs:
         run: npm ci
 
       - name: Build
-        # API는 상대경로(/api/*)로 호출 → CloudFront가 백엔드로 프록시
-        # (VITE_API_BASE_URL 불필요. 절대경로로 박으면 Mixed Content 차단됨)
+        # 운영 API 베이스 URL을 빌드 시 주입 (https://api.야구맵.kr, 백엔드 HTTPS+CORS)
+        # Vite는 import.meta.env.VITE_API_BASE_URL 를 빌드 타임에 치환함
+        env:
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
         run: npm run build
 
       - name: Configure AWS credentials

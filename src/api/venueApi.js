@@ -168,3 +168,17 @@ export async function fetchFilters() {
   if (!res.ok) throw new Error(`필터 조회 실패: ${res.status}`)
   return res.json()
 }
+
+/* ── 가게 이미지 검색 ────────────────────────────────────────────
+ * 백엔드: GET /api/images?query={가게명}
+ * 상대경로 /api/images 는 CloudFront에 없으므로 BASE_URL 사용
+ */
+export async function fetchImages(venueName) {
+  try {
+    const res = await fetch(`${BASE_URL}/api/images?query=${encodeURIComponent(venueName)}`)
+    if (!res.ok) return []
+    return res.json()
+  } catch {
+    return []
+  }
+}

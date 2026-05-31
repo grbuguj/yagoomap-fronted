@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { TEAM_CONFIG } from '../data/teams'
+import { fetchImages } from '../api/venueApi'
 import ReviewSection from './ReviewSection'
 import styles from './VenueDetail.module.css'
 
@@ -89,18 +90,16 @@ function VenueDetail({ venue, onClose, onCloseAll }) {
     })
   }, [venue?.phone])
 
-  // 이미지 5장 fetch
+  // 이미지 5장 fetch (BASE_URL 기반 — CloudFront 경유 불가)
   useEffect(() => {
     if (!venue?.name) return
     setImgLoading(true)
     setVenueImgs([])
-    fetch(`/api/images?query=${encodeURIComponent(venue.name)}`)
-      .then(r => r.ok ? r.json() : [])
+    fetchImages(venue.name)
       .then(items => {
         setVenueImgs(items?.slice(0, 5) ?? [])
         setImgLoading(false)
       })
-      .catch(() => setImgLoading(false))
   }, [venue?.name])
 
   const openLightbox  = useCallback((i) => setLightboxIdx(i), [])

@@ -139,6 +139,11 @@ function App() {
     if (dy > 60 && swipeScrollTop.current === 0) setSidebarOpen(false)
   }, [])
 
+  // 화면 전환(구단선택 ↔ 목록 ↔ 상세) 시 스크롤을 항상 맨 위로
+  useEffect(() => {
+    if (sidebarBodyRef.current) sidebarBodyRef.current.scrollTop = 0
+  }, [showTeamSelector, selectedVenue])
+
   // ── 가게 목록 로드 ──────────────────────────────────────────
   useEffect(() => {
     fetchVenues()
@@ -172,10 +177,10 @@ function App() {
   // ── 필터링 ───────────────────────────────────────────────
   const filteredVenues = useMemo(() => {
     if (!isAvailable) return []
-    // 하이브리드: 일반 구단을 하나라도 고르면 혼합 응원 가게도 함께 노출.
-    //            혼합 카드만 콕 집어 들어오면(팀 미선택) 혼합 가게만 노출.
+    // 목록에는 선택한 항목만 노출 — 혼합 응원 가게는 혼합 카드를 직접 골랐을 때만.
+    // (구단 목록에는 그 구단 가게만; 혼합은 상단 전용 버튼으로 접근)
     let list = venues.filter(v => {
-      if (isMixedTeam(v.team)) return mixedSelected || teamSelected
+      if (isMixedTeam(v.team)) return mixedSelected
       return selectedTeams.includes(v.team) && availableTeams.includes(v.team)
     })
     if (keyword.trim()) {
@@ -192,7 +197,7 @@ function App() {
       )
     }
     return list
-  }, [venues, selectedTeams, isAvailable, availableTeams, teamSelected, mixedSelected, keyword, boundsFilter])
+  }, [venues, selectedTeams, isAvailable, availableTeams, mixedSelected, keyword, boundsFilter])
 
   // KakaoMap에 넘길 단일 팀값 (첫 번째 선택 팀 or null)
   const primaryTeam = selectedTeams.length === 1 ? selectedTeams[0] : null

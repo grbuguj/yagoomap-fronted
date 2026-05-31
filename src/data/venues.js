@@ -11,7 +11,7 @@ export const VENUES = [
   { id: 7,  name: "슐미랭삼 선릉점",       address: "서울 강남구 삼성동 140-19",            lat: 37.5066, lng: 127.0497, rating: 4.9, reviewCount: 203,               area: "역삼역",     team: "LG 트윈스", phone: "02-5566-7788" },
   { id: 8,  name: "더블플레이치킨 홍대점", address: "서울 마포구 동교동 200-24",            lat: 37.5582, lng: 126.9229, rating: 4.5, reviewCount: 77,           area: "홍대입구역",  team: "LG 트윈스", phone: "02-3313-4455" },
   { id: 9,  name: "맛도리네포장마차",       address: "서울 송파구 삼전동 166-5",             lat: 37.5003, lng: 127.0947, rating: 4.5, reviewCount: 61,               area: "잠실역",     team: "LG 트윈스", phone: "02-412-9900"  },
-  { id: 10, name: "당인리극장",             address: "서울 마포구 서교동 394-20",            lat: 37.5492, lng: 126.9154, rating: 4.7, reviewCount: 156,               area: "홍대입구역",  team: "LG 트윈스", phone: "02-3344-5566" },
+  { id: 10, name: "당인리극장 ",             address: "서울 마포구 서교동 394-20",            lat: 37.5492, lng: 126.9154, rating: 4.7, reviewCount: 156,               area: "홍대입구역",  team: "LG 트윈스", phone: "02-3344-5566" },
   { id: 11, name: "레코드피자 을지로점",    address: "서울 중구 을지로3가 342-2",            lat: 37.5660, lng: 126.9905, rating: 4.7, reviewCount: 132,          area: "기타",       team: "LG 트윈스", phone: "02-2211-3344" },
   { id: 12, name: "치어하우스",             address: "서울 마포구 상수동 145-2",             lat: 37.5484, lng: 126.9224, rating: 4.8, reviewCount: 94,               area: "홍대입구역",  team: "LG 트윈스", phone: "02-3355-6677" },
   { id: 13, name: "밤새맥주 일산본점",      address: "경기도 고양시 일산동구 장항동 761",   lat: 37.6620, lng: 126.7673, rating: 4.6, reviewCount: 93,               area: "기타",       team: "LG 트윈스", phone: "031-9988-7766" },

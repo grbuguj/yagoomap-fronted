@@ -126,7 +126,10 @@ function VenueDetail({ venue, onClose, onCloseAll }) {
       '_blank'
     )
   const handleNaverMap = () =>
-    window.open(`https://map.naver.com/v5/search/${encodeURIComponent(venue.name)}`, '_blank')
+    window.open(
+      venue.naverMapUrl || `https://map.naver.com/v5/search/${encodeURIComponent(venue.name)}`,
+      '_blank'
+    )
 
   const hasImgs = venueImgs.length > 0
 

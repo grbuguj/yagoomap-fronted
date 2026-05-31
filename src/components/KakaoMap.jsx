@@ -2,30 +2,22 @@ import { useEffect, useRef } from 'react'
 import { TEAM_CONFIG } from '../data/teams'
 import styles from './KakaoMap.module.css'
 
-const TEAM_MARKER_CLASS = {
-  'LG 트윈스':    'ymap-marker--lg',
-  'KIA 타이거즈': 'ymap-marker--kia',
-  '롯데 자이언츠': 'ymap-marker--lotte',
-}
-
-const TEAM_SHORT = {
-  'LG 트윈스':    'LG',
-  'KIA 타이거즈': 'K',
-  '롯데 자이언츠': 'L',
-}
-
 // 레이블에 표시할 가게 이름 (너무 길면 자름)
 function labelText(name) {
   return name.length > 9 ? name.slice(0, 8) + '…' : name
 }
 
 function createMarkerContent(venue) {
-  const teamClass = TEAM_MARKER_CLASS[venue.team] || ''
-  const short     = TEAM_SHORT[venue.team] || '⚾'
+  const cfg       = TEAM_CONFIG[venue.team]
+  const teamClass = cfg?.markerClass || ''
+  const short     = cfg?.shortName || '⚾'
+  const color     = cfg?.color || '#888'
 
   const div = document.createElement('div')
   div.className = `ymap-marker ${teamClass}`.trim()
   div.dataset.id = String(venue.id)
+  // 핀/활성 레이블 색상을 전 구단에 동적 주입
+  div.style.setProperty('--team-color', color)
   div.innerHTML = `
     <div class="ymap-pin">
       <span class="ymap-pin-text">${short}</span>

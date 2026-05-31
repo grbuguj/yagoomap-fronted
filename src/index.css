@@ -60,6 +60,8 @@ input, textarea {
   justify-content: center;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.28);
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  /* 팀 색상은 마커 생성 시 --team-color 로 주입 (전 구단 지원) */
+  background: var(--team-color, var(--clr-lg));
 }
 
 .ymap-pin-text {
@@ -87,11 +89,6 @@ input, textarea {
   text-overflow: ellipsis;
 }
 
-/* 팀별 핀 색상 */
-.ymap-marker--lg   .ymap-pin { background: var(--clr-lg); }
-.ymap-marker--kia  .ymap-pin { background: var(--clr-kia); }
-.ymap-marker--lotte .ymap-pin { background: var(--clr-lotte); }
-
 /* 선택 상태 */
 .ymap-marker--active .ymap-pin {
   transform: rotate(-45deg) scale(1.25);
@@ -102,9 +99,10 @@ input, textarea {
   font-weight: 700;
 }
 
-.ymap-marker--lg.ymap-marker--active   .ymap-label { color: var(--clr-lg); border-color: var(--clr-lg); }
-.ymap-marker--kia.ymap-marker--active  .ymap-label { color: var(--clr-kia); border-color: var(--clr-kia); }
-.ymap-marker--lotte.ymap-marker--active .ymap-label { color: var(--clr-lotte); border-color: var(--clr-lotte); }
+.ymap-marker--active .ymap-label {
+  color: var(--team-color, var(--clr-lg));
+  border-color: var(--team-color, var(--clr-lg));
+}
 
 /* ── 현재 위치 마커 ─────────────────────────────────────────── */
 .ymap-my-location {

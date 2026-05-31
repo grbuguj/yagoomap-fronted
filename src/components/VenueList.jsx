@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react'
 import { TEAM_CONFIG, isMixedTeam } from '../data/teams'
 import styles from './VenueList.module.css'
 
+// venueApi.js 와 동일한 BASE_URL 전략 (운영: api 도메인, 로컬: vite 프록시)
+const API_BASE = import.meta.env.VITE_API_BASE_URL ?? ''
+
 // 앱 수명 동안 유지되는 썸네일 캐시
 const thumbCache = new Map()
 
@@ -35,8 +38,11 @@ function VenueThumb({ name, teamColor }) {
       return
     }
     let cancelled = false
-    imgQueue.add(() =>
-      fetch(`/api/images?query=${encodeURIComponent(name)}`)
+    imgQueue.add(() => {
+      // 백엔드 이미지 검색이 느리거나 504면 빠르게 포기하고 placeholder로 (큐 점유 방지)
+      const ctrl  = new AbortController()
+      const timer = setTimeout(() => ctrl.abort(), 6000)
+      return fetch(`${API_BASE}/api/images?query=${encodeURIComponent(name)}`, { signal: ctrl.signal })
         .then(r => r.ok ? r.json() : [])
         .then(items => {
           const imgUrl = items[0]?.thumbnail ?? null
@@ -44,7 +50,8 @@ function VenueThumb({ name, teamColor }) {
           if (!cancelled) setUrl(imgUrl)
         })
         .catch(() => { thumbCache.set(name, null) })
-    )
+        .finally(() => clearTimeout(timer))
+    })
     return () => { cancelled = true }
   }, [name])
 

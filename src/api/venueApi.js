@@ -10,7 +10,13 @@
 import { VENUES }       from '../data/venues'
 import { MOCK_REVIEWS } from '../data/reviews'
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8081'
+// ── API BASE URL ────────────────────────────────────────────────
+// 상대경로('') 사용 → 같은 HTTPS 도메인의 /api/* 로 요청.
+//   - 로컬 개발: vite.config.js 프록시가 /api → localhost:8081 로 전달
+//   - 운영: CloudFront 가 /api/* 를 백엔드(EC2)로 프록시
+// 백엔드가 HTTP 전용이라 절대경로(http://EC2:8081)로 박으면
+// HTTPS 페이지에서 Mixed Content 로 차단됨 → 반드시 상대경로 유지.
+const BASE_URL = ''
 
 // ── 개발 환경 판단 ──────────────────────────────────────────────
 const USE_MOCK = false

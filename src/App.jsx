@@ -10,12 +10,12 @@ import SidebarFooter from './components/SidebarFooter'
 import PolicyModal   from './components/PolicyModal'
 import WelcomeModal, { shouldShowWelcome } from './components/WelcomeModal'
 import { fetchVenues } from './api/venueApi'
-import { AVAILABLE_TEAMS } from './data/teams'
+import { TEAMS } from './data/teams'
 import './App.css'
 
 function App() {
-  // 초기값: 전체 가용 팀 선택됨
-  const [selectedTeams,    setSelectedTeams]    = useState([...AVAILABLE_TEAMS])
+  // 초기값: 가게 데이터 로드 후 가용 팀 자동 선택 (아래 effect)
+  const [selectedTeams,    setSelectedTeams]    = useState([])
   const [showTeamSelector, setShowTeamSelector] = useState(true)
   const [keyword,          setKeyword]          = useState('')
   const [selectedVenue,    setSelectedVenue]    = useState(null)
@@ -37,8 +37,29 @@ function App() {
   const swipeTouchY    = useRef(0)
   const swipeScrollTop = useRef(0)
   const sidebarBodyRef = useRef(null)
+  const teamsInitedRef = useRef(false)
 
-  const isAvailable = selectedTeams.some(t => AVAILABLE_TEAMS.includes(t))
+  // ── 팀별 등록 가게 수 / 가용 팀 (실제 데이터 기준) ─────────────
+  const teamCounts = useMemo(() => {
+    const m = {}
+    venues.forEach(v => { m[v.team] = (m[v.team] || 0) + 1 })
+    return m
+  }, [venues])
+
+  const availableTeams = useMemo(
+    () => TEAMS.filter(t => (teamCounts[t.key] || 0) > 0).map(t => t.key),
+    [teamCounts]
+  )
+
+  // 데이터 첫 로드 시 가용 팀 전체 선택 (1회)
+  useEffect(() => {
+    if (!teamsInitedRef.current && availableTeams.length > 0) {
+      setSelectedTeams(availableTeams)
+      teamsInitedRef.current = true
+    }
+  }, [availableTeams])
+
+  const isAvailable = selectedTeams.some(t => availableTeams.includes(t))
 
   // ── 팀 토글 ──────────────────────────────────────────────
   const handleTeamToggle = useCallback((teamKey) => {
@@ -46,10 +67,6 @@ function App() {
       if (prev.includes(teamKey)) return prev.filter(t => t !== teamKey)
       return [...prev, teamKey]
     })
-  }, [])
-
-  const handleTeamClearAll = useCallback(() => {
-    setSelectedTeams([])
   }, [])
 
   const handleShowSelector  = useCallback(() => {
@@ -144,7 +161,7 @@ function App() {
   // ── 필터링 ───────────────────────────────────────────────
   const filteredVenues = useMemo(() => {
     if (!isAvailable) return []
-    let list = venues.filter(v => selectedTeams.includes(v.team) && AVAILABLE_TEAMS.includes(v.team))
+    let list = venues.filter(v => selectedTeams.includes(v.team) && availableTeams.includes(v.team))
     if (keyword.trim()) {
       const kw = keyword.trim().toLowerCase()
       list = list.filter(v =>
@@ -159,7 +176,7 @@ function App() {
       )
     }
     return list
-  }, [venues, selectedTeams, isAvailable, keyword, boundsFilter])
+  }, [venues, selectedTeams, isAvailable, availableTeams, keyword, boundsFilter])
 
   // KakaoMap에 넘길 단일 팀값 (첫 번째 선택 팀 or null)
   const primaryTeam = selectedTeams.length === 1 ? selectedTeams[0] : null
@@ -205,6 +222,8 @@ function App() {
                   selectedTeams={selectedTeams}
                   onToggle={handleTeamToggle}
                   onConfirm={handleHideSelector}
+                  counts={teamCounts}
+                  availableTeams={availableTeams}
                 />
               ) : venuesLoading ? (
                 <div className="venuesLoading">

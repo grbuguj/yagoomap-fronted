@@ -1,5 +1,4 @@
-import { TEAMS, AVAILABLE_TEAMS } from '../data/teams'
-import { VENUES } from '../data/venues'
+import { TEAMS } from '../data/teams'
 import styles from './TeamSelector.module.css'
 
 const TEAM_EMOJI = {
@@ -15,19 +14,14 @@ const TEAM_EMOJI = {
   '키움 히어로즈': '🦸',
 }
 
-function TeamSelector({ selectedTeams, onToggle, onConfirm }) {
-  const countByTeam = {}
-  VENUES.forEach(v => {
-    countByTeam[v.team] = (countByTeam[v.team] || 0) + 1
-  })
-
+function TeamSelector({ selectedTeams, onToggle, onConfirm, counts = {}, availableTeams = [] }) {
   return (
     <div className={styles.wrap}>
       <p className={styles.heading}>⚾ 구단 선택</p>
       <div className={styles.grid}>
         {TEAMS.map(team => {
-          const available = AVAILABLE_TEAMS.includes(team.key)
-          const count     = countByTeam[team.key] || 0
+          const available = availableTeams.includes(team.key)
+          const count     = counts[team.key] || 0
           const selected  = selectedTeams.includes(team.key)
 
           return (

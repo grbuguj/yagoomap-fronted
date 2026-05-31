@@ -66,6 +66,10 @@ function VenueThumb({ name, teamColor }) {
 }
 
 function Stars({ rating }) {
+  // 리뷰 없는(평점 0) 가게는 "신규" 칩으로 — 0.0이 저평가처럼 보이는 것 방지
+  if (!rating || rating <= 0) {
+    return <span className={styles.newTag}>신규</span>
+  }
   return (
     <span className={styles.stars}>
       ★ <span>{rating.toFixed(1)}</span>

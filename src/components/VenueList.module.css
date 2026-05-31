@@ -51,6 +51,20 @@
   background: var(--clr-bg);
 }
 
+.item:active {
+  background: var(--clr-border);
+}
+
+.item:active .thumb,
+.item:active .thumbPlaceholder {
+  transform: scale(0.97);
+}
+
+.thumb,
+.thumbPlaceholder {
+  transition: transform 0.12s ease;
+}
+
 .itemLeft {
   flex-shrink: 0;
 }
@@ -125,6 +139,19 @@
   flex-shrink: 0;
 }
 
+/* 리뷰 없는 신규 가게 칩 */
+.newTag {
+  flex-shrink: 0;
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #2563eb;
+  background: #eff6ff;
+  border: 1px solid #dbeafe;
+  border-radius: 6px;
+  padding: 1px 7px;
+  white-space: nowrap;
+}
+
 .stars span {
   color: var(--clr-text);
   font-weight: 600;
@@ -141,8 +168,14 @@
 
 .arrow {
   font-size: 18px;
-  color: var(--clr-border);
+  color: #c7ccd1;
   flex-shrink: 0;
+  transition: transform 0.12s ease, color 0.12s ease;
+}
+
+.item:hover .arrow {
+  color: var(--clr-muted);
+  transform: translateX(2px);
 }
 
 .empty {

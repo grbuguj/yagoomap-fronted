@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
-import { TEAM_CONFIG } from '../data/teams'
+import { TEAM_CONFIG, MIXED_COLOR, isMixedTeam } from '../data/teams'
 import { fetchImages } from '../api/venueApi'
 import ReviewSection from './ReviewSection'
 import styles from './VenueDetail.module.css'
@@ -124,8 +124,10 @@ function VenueDetail({ venue, onClose, onCloseAll }) {
 
   if (!venue) return null
 
+  const mixed     = isMixedTeam(venue.team)
   const teamCfg   = TEAM_CONFIG[venue.team]
-  const teamColor = teamCfg?.color || 'var(--clr-primary)'
+  // 혼합 응원은 특정 구단이 없으므로 중립 회색으로 통일 (리스트의 🍻 혼합 칩과 일관)
+  const teamColor = mixed ? MIXED_COLOR : (teamCfg?.color || 'var(--clr-primary)')
 
   const CATEGORY_EMOJI = {
     '치킨': '🍗', '술집': '🍺', '포차': '🏮',
@@ -219,7 +221,7 @@ function VenueDetail({ venue, onClose, onCloseAll }) {
               </span>
             )}
             <span className={styles.teamBadge} style={{ background: teamColor }}>
-              {teamCfg?.shortName || venue.team}
+              {mixed ? '🍻 혼합' : (teamCfg?.shortName || venue.team)}
             </span>
           </div>
         </div>
@@ -302,9 +304,16 @@ function VenueDetail({ venue, onClose, onCloseAll }) {
 
       <div className={styles.divider} />
 
-      {/* 별점 */}
+      {/* 별점 — 리뷰 없으면 0.0 대신 안내 */}
       <div className={styles.ratingRow}>
-        <Stars rating={venue.rating} />
+        {venue.rating > 0 ? (
+          <Stars rating={venue.rating} />
+        ) : (
+          <span className={styles.noReview}>
+            <span className={styles.newTag}>신규</span>
+            아직 리뷰가 없어요 · 첫 리뷰를 남겨보세요
+          </span>
+        )}
       </div>
 
       <ReviewSection venueId={venue.id} onCountChange={setReviewCount} />

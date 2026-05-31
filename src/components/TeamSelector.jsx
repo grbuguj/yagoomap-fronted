@@ -51,7 +51,7 @@ function TeamSelector({ selectedTeams, onToggle, onConfirm, counts = {}, availab
               {available && (
                 <span
                   className={styles.listBtn}
-                  onClick={e => { e.stopPropagation(); onConfirm() }}
+                  onClick={e => { e.stopPropagation(); onConfirm(team.key) }}
                 >
                   목록 보기 ›
                 </span>

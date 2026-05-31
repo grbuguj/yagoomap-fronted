@@ -74,7 +74,9 @@ function App() {
     setSelectedVenue(null)
   }, [])
 
-  const handleHideSelector = useCallback(() => {
+  const handleHideSelector = useCallback((teamKey) => {
+    // "목록 보기"로 특정 구단을 콕 집어 들어온 경우 → 그 구단만 표시
+    if (typeof teamKey === 'string') setSelectedTeams([teamKey])
     setShowTeamSelector(false)
     setKeyword('')
     setBoundsFilter(null)

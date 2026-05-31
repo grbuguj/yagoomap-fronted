@@ -175,6 +175,22 @@ export function deletePlace(placeId) {
   return request(`/api/places/${placeId}`, { method: 'DELETE' })
 }
 
+/* ── 리뷰 관리 ───────────────────────────────────────────────────
+ * GET /api/places/{placeId}/reviews
+ * 응답: [{ id, placeId, content, rating, createdAt, active }]
+ * (사용자용 조회 API와 동일 엔드포인트를 관리자 화면에서 재사용)
+ */
+export function fetchPlaceReviews(placeId) {
+  return request(`/api/places/${placeId}/reviews`)
+}
+
+/* DELETE /api/places/{placeId}/reviews/{reviewId} → 200/204
+ * 부적절한 리뷰 삭제. 삭제 후 해당 가게 평균 평점·리뷰 수 갱신됨.
+ */
+export function deleteReview(placeId, reviewId) {
+  return request(`/api/places/${placeId}/reviews/${reviewId}`, { method: 'DELETE' })
+}
+
 /* ── 구단 목록 (teamId 매핑 소스) ────────────────────────────────
  * GET /api/place-filters
  * ⚠️ 명세는 teams:[{teamId,team}] 였으나 실제 응답은 teams:["LG 트윈스"] (문자열 배열).

@@ -134,6 +134,24 @@ export async function submitReview({ venueId, rating, content }) {
   }
 }
 
+/* ── 리뷰 요약 (AI) ──────────────────────────────────────────────
+ * 백엔드: GET /api/places/{venueId}/reviews/summary
+ * 응답: { placeId, averageRating, reviewCount, summary }
+ * 리뷰가 없으면(404 등) null 반환 → 호출부에서 요약 카드 미표시
+ */
+export async function fetchReviewSummary(venueId) {
+  if (USE_MOCK) return null
+  try {
+    const res = await fetch(`${BASE_URL}/api/places/${venueId}/reviews/summary`)
+    if (!res.ok) return null
+    const data = await res.json()
+    // summary 문구가 비어있으면 의미 없는 카드이므로 null 처리
+    return data && (data.summary || data.reviewCount) ? data : null
+  } catch {
+    return null
+  }
+}
+
 /* ── 제보 ────────────────────────────────────────────────────────
  * 백엔드: POST /api/reports
  * Body: { placeName, address, teamId, team, content, referenceLink }

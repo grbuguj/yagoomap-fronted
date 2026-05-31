@@ -15,10 +15,12 @@ import {
   createPlace,
   updatePlace,
   deletePlace,
+  fetchPlaceReviews,
+  deleteReview,
   fetchTeams,
 } from '../api/adminApi'
 
-const TABS = ['대시보드', '제보 관리', '검수 후보', '카카오 검색', '장소 관리']
+const TABS = ['대시보드', '제보 관리', '검수 후보', '카카오 검색', '장소 관리', '리뷰 관리']
 
 const STATUS_LABEL = {
   PENDING:   { label: '대기중',  cls: 'badgePending' },
@@ -929,6 +931,114 @@ function PlaceManagement({ teams }) {
 }
 
 /* ────────────────────────────────────────────────
+   리뷰 관리 (장소 선택 → 리뷰 조회 → 삭제)
+──────────────────────────────────────────────── */
+function ReviewManagement() {
+  const [places, setPlaces] = useState([])
+  const [placeId, setPlaceId] = useState('')
+  const [reviews, setReviews] = useState([])
+  const [loadingPlaces, setLoadingPlaces] = useState(true)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const [busy, setBusy] = useState(false)
+
+  // 장소 목록(선택용) 1회 로드
+  useEffect(() => {
+    let active = true
+    fetchAdminPlaces()
+      .then(data => { if (active) { setPlaces(Array.isArray(data) ? data : []); setLoadingPlaces(false) } })
+      .catch(() => { if (active) setLoadingPlaces(false) })
+    return () => { active = false }
+  }, [])
+
+  const loadReviews = useCallback((id) => {
+    if (!id) { setReviews([]); return }
+    setLoading(true)
+    setError(null)
+    fetchPlaceReviews(id)
+      .then(data => { setReviews(Array.isArray(data) ? data : []); setLoading(false) })
+      .catch(err => { setError(err.message); setLoading(false) })
+  }, [])
+
+  const handleSelect = (e) => {
+    const id = e.target.value
+    setPlaceId(id)
+    loadReviews(id)
+  }
+
+  const handleDelete = async () => {
+    setBusy(true)
+    try {
+      await deleteReview(placeId, deleteTarget.id)
+      setDeleteTarget(null)
+      loadReviews(placeId)
+    } catch (err) {
+      alert(`삭제 실패: ${err.message}`)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const selectedPlace = places.find(p => String(p.id) === String(placeId))
+
+  return (
+    <>
+      <div className={styles.sectionHeader}>
+        <div className={styles.sectionTitle}>리뷰 관리</div>
+        {placeId && (
+          <button className={styles.btnPrimary} onClick={() => loadReviews(placeId)} disabled={loading}>새로고침</button>
+        )}
+      </div>
+
+      <div className={styles.formGroup} style={{ maxWidth: 360, marginBottom: 20 }}>
+        <label className={styles.label}>장소 선택</label>
+        <select className={styles.select} value={placeId} onChange={handleSelect} disabled={loadingPlaces}>
+          <option value="">{loadingPlaces ? '장소 불러오는 중…' : '리뷰를 볼 장소를 선택하세요'}</option>
+          {places.map(p => (
+            <option key={p.id} value={p.id}>{p.name} ({p.team})</option>
+          ))}
+        </select>
+      </div>
+
+      {!placeId ? (
+        <div className={styles.empty}>장소를 선택하면 해당 가게의 리뷰 목록이 표시됩니다</div>
+      ) : loading ? <Loading /> : error ? <ErrorBox message={error} onRetry={() => loadReviews(placeId)} /> : (
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <thead>
+              <tr><th>ID</th><th>별점</th><th>내용</th><th>작성일</th><th>처리</th></tr>
+            </thead>
+            <tbody>
+              {reviews.length === 0 && <tr><td colSpan={5} className={styles.empty}>작성된 리뷰가 없습니다</td></tr>}
+              {reviews.map(rv => (
+                <tr key={rv.id}>
+                  <td>{rv.id}</td>
+                  <td><span style={{ color: '#f59e0b' }}>{'★'.repeat(rv.rating)}</span><span style={{ color: '#d1d5db' }}>{'☆'.repeat(Math.max(0, 5 - rv.rating))}</span></td>
+                  <td><div className={styles.ellipsis} title={rv.content}>{rv.content}</div></td>
+                  <td>{formatDate(rv.createdAt)}</td>
+                  <td>
+                    <button className={styles.btnDelete} onClick={() => setDeleteTarget(rv)}>삭제</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {deleteTarget && (
+        <ConfirmModal
+          message={`${selectedPlace ? `"${selectedPlace.name}"의 ` : ''}리뷰(별점 ${deleteTarget.rating}점)를 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`}
+          onConfirm={busy ? () => {} : handleDelete}
+          onClose={() => setDeleteTarget(null)}
+        />
+      )}
+    </>
+  )
+}
+
+/* ────────────────────────────────────────────────
    메인
 ──────────────────────────────────────────────── */
 export default function AdminPage() {
@@ -967,6 +1077,7 @@ export default function AdminPage() {
         {tab === 2 && <CandidateManagement teams={teams} />}
         {tab === 3 && <KakaoSearch />}
         {tab === 4 && <PlaceManagement teams={teams} />}
+        {tab === 5 && <ReviewManagement />}
       </main>
     </div>
   )

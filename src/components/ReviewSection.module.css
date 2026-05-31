@@ -57,6 +57,68 @@
   color: var(--clr-text);
 }
 
+/* ── AI 요약 카드 ─────────────────────────────────── */
+.summaryCard {
+  background: linear-gradient(135deg, var(--clr-bg), #fff);
+  border: 1px solid var(--clr-border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.summaryTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.summaryStars {
+  font-size: 15px;
+  line-height: 1;
+}
+
+.summaryStarsFilled {
+  color: #f59e0b;
+}
+
+.summaryStarsEmpty {
+  color: var(--clr-border);
+}
+
+.summaryAvg {
+  font-size: 16px;
+  font-weight: 800;
+  color: #f59e0b;
+}
+
+.summaryCount {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--clr-muted);
+}
+
+.summaryText {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--clr-text);
+  word-break: keep-all;
+}
+
+.summaryBadge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  color: #fff;
+  background: var(--clr-primary);
+  padding: 2px 6px;
+  border-radius: 6px;
+  margin-right: 6px;
+  vertical-align: middle;
+}
+
 /* ── 작성 폼 ──────────────────────────────────────── */
 .form {
   background: var(--clr-bg);

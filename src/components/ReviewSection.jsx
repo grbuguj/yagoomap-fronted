@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { fetchReviews, submitReview } from '../api/venueApi'
+import { fetchReviews, submitReview, fetchReviewSummary } from '../api/venueApi'
 import styles from './ReviewSection.module.css'
 
 /* ── 별점 선택기 ─────────────────────────────────────── */
@@ -55,19 +55,26 @@ function ReviewItem({ review }) {
 /* ── ReviewSection ──────────────────────────────────── */
 function ReviewSection({ venueId, onCountChange }) {
   const [reviews,    setReviews]    = useState([])
-  const [loading,    setLoading]    = useState(true)
+  const [summary,    setSummary]    = useState(null)
+  const [loadedId,   setLoadedId]   = useState(null) // 마지막으로 로드 완료한 venueId
   const [showForm,   setShowForm]   = useState(false)
   const [rating,     setRating]     = useState(0)
   const [content,    setContent]    = useState('')
   const [submitting, setSubmitting] = useState(false)
 
+  // 현재 venueId 데이터가 아직 안 들어왔으면 로딩 상태 (effect 내 동기 setState 회피)
+  const loading = loadedId !== venueId
+
   useEffect(() => {
     let cancelled = false
-    setLoading(true)
-    fetchReviews(venueId).then(data => {
+    Promise.all([
+      fetchReviews(venueId),
+      fetchReviewSummary(venueId),
+    ]).then(([data, sum]) => {
       if (!cancelled) {
         setReviews(data)
-        setLoading(false)
+        setSummary(sum)
+        setLoadedId(venueId)
         onCountChange?.(data.length)
       }
     })
@@ -84,6 +91,8 @@ function ReviewSection({ venueId, onCountChange }) {
       onCountChange?.(updated.length)
       return updated
     })
+    // 평균 평점·AI 요약 재계산 (백엔드가 작성 후 갱신)
+    fetchReviewSummary(venueId).then(setSummary)
     setRating(0)
     setContent('')
     setShowForm(false)
@@ -111,6 +120,32 @@ function ReviewSection({ venueId, onCountChange }) {
           {showForm ? '취소' : '✏️ 리뷰 쓰기'}
         </button>
       </div>
+
+      {/* AI 요약 카드 — 리뷰가 있을 때만 */}
+      {!loading && summary && summary.reviewCount > 0 && (
+        <div className={styles.summaryCard}>
+          <div className={styles.summaryTop}>
+            <span className={styles.summaryStars}>
+              <span className={styles.summaryStarsFilled}>
+                {'★'.repeat(Math.round(summary.averageRating ?? 0))}
+              </span>
+              <span className={styles.summaryStarsEmpty}>
+                {'☆'.repeat(5 - Math.round(summary.averageRating ?? 0))}
+              </span>
+            </span>
+            <span className={styles.summaryAvg}>
+              {Number(summary.averageRating ?? 0).toFixed(1)}
+            </span>
+            <span className={styles.summaryCount}>리뷰 {summary.reviewCount}개</span>
+          </div>
+          {summary.summary && (
+            <p className={styles.summaryText}>
+              <span className={styles.summaryBadge}>AI 요약</span>
+              {summary.summary}
+            </p>
+          )}
+        </div>
+      )}
 
       {/* 작성 폼 */}
       {showForm && (

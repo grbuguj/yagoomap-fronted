@@ -1343,29 +1343,37 @@ function NoticeManagement() {
           <div style={{ flexShrink: 0, padding: '0 12px', borderRight: '1px solid #2a3a00', height: '100%', display: 'flex', alignItems: 'center', gap: 6 }}>
             <span style={{ fontSize: 13 }}>📢</span>
             <span style={{
-              fontFamily: "'Press Start 2P', monospace",
-              fontSize: 7,
+              fontFamily: "'Galmuri11', monospace",
+              fontSize: 11,
+              fontWeight: 700,
               color: '#c8ff00',
               textShadow: '0 0 4px #c8ff00, 0 0 10px #88ff00',
               letterSpacing: '0.05em',
             }}>NOTICE</span>
           </div>
           {/* 텍스트 (미리보기는 단순 고정 표시) */}
-          <div style={{ flex: 1, overflow: 'hidden', padding: '0 16px' }}>
+          <div style={{ flex: 1, overflow: 'hidden', padding: '0 16px', minWidth: 0 }}>
             <span style={{
-              fontFamily: "'Press Start 2P', monospace",
-              fontSize: active ? 9 : 8,
+              fontFamily: "'Galmuri11', monospace",
+              fontSize: 12,
               color: active ? '#c8ff00' : '#4a4a00',
               textShadow: active ? '0 0 5px #c8ff00, 0 0 12px #88ff00, 0 0 24px #44bb00' : 'none',
               whiteSpace: 'nowrap',
-              letterSpacing: '0.08em',
+              letterSpacing: '0.04em',
             }}>
               {active ? previewText + '   ⚾   ' + previewText : '(비활성 — 사용자에게 안 보임)'}
             </span>
           </div>
+          {/* 우측 실시간 접속자 (샘플) */}
+          <div style={{ flexShrink: 0, padding: '0 14px', borderLeft: '1px solid #2a3a00', height: '100%', display: 'flex', alignItems: 'center', gap: 5, fontFamily: "'Galmuri11', monospace", fontSize: 11, color: '#c8ff00', textShadow: '0 0 5px #c8ff00, 0 0 12px #88ff00' }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#19ff5a', boxShadow: '0 0 6px #19ff5a' }} />
+            <span style={{ color: '#9acf00', fontSize: 10 }}>실시간</span>
+            <span style={{ fontWeight: 700, color: '#e8ff80' }}>12</span>
+            <span style={{ color: '#9acf00', fontSize: 10 }}>명</span>
+          </div>
         </div>
         <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 8 }}>
-          ⚡ 실제 앱에서는 우→좌 방향으로 무한 스크롤됩니다. 저장 후 페이지를 새로고침하면 확인할 수 있어요.
+          ⚡ 실제 앱에서는 공지가 우→좌로 무한 스크롤되고, 우측 “실시간 N명”은 현재 접속자 수가 실시간 반영됩니다. 저장 후 새로고침하면 확인할 수 있어요.
         </p>
       </div>
     </div>

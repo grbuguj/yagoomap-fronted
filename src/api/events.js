@@ -45,6 +45,11 @@ function sessionId() {
   }
 }
 
+// 익명 세션 ID 외부 노출 (실시간 접속자 집계용 — presence heartbeat)
+export function getSessionId() {
+  return sessionId()
+}
+
 // 유입 경로: ?utm_source 우선, 없으면 외부 referrer 호스트. 내부 이동은 제외.
 function detectReferrer() {
   try {

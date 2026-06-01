@@ -20,6 +20,23 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  /* 버튼 기본 스타일 리셋 */
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.logo:hover {
+  opacity: 0.7;
+}
+
+.logo:active {
+  opacity: 0.5;
 }
 
 .logoIcon {

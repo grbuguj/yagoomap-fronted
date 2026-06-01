@@ -13,6 +13,31 @@ import { fetchVenues } from './api/venueApi'
 import { TEAMS, MIXED_TEAM, isMixedTeam } from './data/teams'
 import './App.css'
 
+// 주어진 팀 집합 + 키워드 + 지도범위로 가게를 거른다 (목록/지도 공용)
+function selectVenues(venues, teams, availableTeams, mixedCount, keyword, boundsFilter) {
+  const mixedOn = teams.includes(MIXED_TEAM) && mixedCount > 0
+  const teamOn  = teams.some(t => availableTeams.includes(t))
+  if (!teamOn && !mixedOn) return []
+  let list = venues.filter(v => {
+    if (isMixedTeam(v.team)) return mixedOn
+    return teams.includes(v.team) && availableTeams.includes(v.team)
+  })
+  if (keyword.trim()) {
+    const kw = keyword.trim().toLowerCase()
+    list = list.filter(v =>
+      v.name.toLowerCase().includes(kw) ||
+      v.address.toLowerCase().includes(kw)
+    )
+  }
+  if (boundsFilter) {
+    list = list.filter(v =>
+      v.lat >= boundsFilter.swLat && v.lat <= boundsFilter.neLat &&
+      v.lng >= boundsFilter.swLng && v.lng <= boundsFilter.neLng
+    )
+  }
+  return list
+}
+
 function App() {
   // 초기값: 가게 데이터 로드 후 가용 팀 자동 선택 (아래 effect)
   const [selectedTeams,    setSelectedTeams]    = useState([])  // 구단선택 화면의 체크 상태(기억됨)
@@ -66,15 +91,8 @@ function App() {
     }
   }, [availableTeams, mixedCount])
 
-  // 현재 목록/지도에 적용할 팀 집합
-  //  - 구단선택 화면: 체크된 팀들(다중) → 지도에 실시간 반영
-  //  - 목록 화면: 목록보기로 콕 집어 들어온 팀(viewTeams)만
-  const activeTeams = showTeamSelector ? selectedTeams : viewTeams
-
-  // 일반 구단 선택 여부 / 혼합 선택 여부
-  const teamSelected  = activeTeams.some(t => availableTeams.includes(t))
-  const mixedSelected = activeTeams.includes(MIXED_TEAM) && mixedCount > 0
-  const isAvailable   = teamSelected || mixedSelected
+  // 목록의 포커스 팀: 구단선택 화면=체크된 팀, 목록 화면=목록보기로 들어온 팀
+  const focusTeams  = showTeamSelector ? selectedTeams : viewTeams
 
   // ── 팀 토글 ──────────────────────────────────────────────
   const handleTeamToggle = useCallback((teamKey) => {
@@ -182,32 +200,22 @@ function App() {
   }, [])
 
   // ── 필터링 ───────────────────────────────────────────────
-  const filteredVenues = useMemo(() => {
-    if (!isAvailable) return []
-    // 목록에는 선택한 항목만 노출 — 혼합 응원 가게는 혼합 카드를 직접 골랐을 때만.
-    // (구단 목록에는 그 구단 가게만; 혼합은 상단 전용 버튼으로 접근)
-    let list = venues.filter(v => {
-      if (isMixedTeam(v.team)) return mixedSelected
-      return activeTeams.includes(v.team) && availableTeams.includes(v.team)
-    })
-    if (keyword.trim()) {
-      const kw = keyword.trim().toLowerCase()
-      list = list.filter(v =>
-        v.name.toLowerCase().includes(kw) ||
-        v.address.toLowerCase().includes(kw)
-      )
-    }
-    if (boundsFilter) {
-      list = list.filter(v =>
-        v.lat >= boundsFilter.swLat && v.lat <= boundsFilter.neLat &&
-        v.lng >= boundsFilter.swLng && v.lng <= boundsFilter.neLng
-      )
-    }
-    return list
-  }, [venues, activeTeams, isAvailable, availableTeams, mixedSelected, keyword, boundsFilter])
+  // 목록: 포커스 팀(목록보기로 들어온 팀)만 — "그 구단 목록만"
+  const listVenues = useMemo(
+    () => selectVenues(venues, focusTeams, availableTeams, mixedCount, keyword, boundsFilter),
+    [venues, focusTeams, availableTeams, mixedCount, keyword, boundsFilter]
+  )
 
-  // KakaoMap에 넘길 단일 팀값 (첫 번째 선택 팀 or null)
-  const primaryTeam = activeTeams.length === 1 ? activeTeams[0] : null
+  // 지도: 항상 체크된 팀 전체(+현재 보고 있는 팀) — 체크된 마커는 계속 표시
+  const mapVenues = useMemo(() => {
+    const teams = showTeamSelector
+      ? selectedTeams
+      : Array.from(new Set([...selectedTeams, ...viewTeams]))
+    return selectVenues(venues, teams, availableTeams, mixedCount, keyword, boundsFilter)
+  }, [venues, showTeamSelector, selectedTeams, viewTeams, availableTeams, mixedCount, keyword, boundsFilter])
+
+  // KakaoMap/리포트에 넘길 단일 팀값 (포커스 팀이 하나면 그 팀, 아니면 null)
+  const primaryTeam = focusTeams.length === 1 ? focusTeams[0] : null
 
   return (
     <div className="app">
@@ -281,7 +289,7 @@ function App() {
                 </div>
               ) : (
                 <VenueList
-                  venues={filteredVenues}
+                  venues={listVenues}
                   selectedTeams={viewTeams}
                   onSelect={handleVenueSelect}
                   onOpenSelector={handleShowSelector}
@@ -310,7 +318,7 @@ function App() {
           </button>
 
           <KakaoMap
-            venues={filteredVenues}
+            venues={mapVenues}
             selectedTeam={primaryTeam}
             selectedVenue={selectedVenue}
             onVenueClick={handleVenueSelect}

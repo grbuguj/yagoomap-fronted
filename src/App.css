@@ -1,6 +1,7 @@
 .app {
   position: relative;
-  height: 100vh;
+  height: 100vh;        /* 구형 브라우저 fallback */
+  height: 100dvh;       /* iOS Safari 하단 툴바 자동 보정 (iOS 15.4+, Chrome 108+) */
   overflow: hidden;
 }
 
@@ -265,6 +266,11 @@
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
   }
 
+  /* iOS 홈 인디케이터 safe area — 열린 상태에서 콘텐츠가 bar 뒤에 숨지 않도록 */
+  .sidebar {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
   /* ── 드래그 핸들 ── */
   .sidebarHandle {
     display: flex;
@@ -317,10 +323,10 @@
     display: none;
   }
 
-  /* 내 위치 버튼: 헤더 바로 아래 */
+  /* 내 위치 버튼: 헤더 + 공지 배너(있을 경우) 아래 */
   .locateBtn {
     bottom: auto;
-    top: 88px;
+    top: calc(88px + var(--notice-h, 0px));
     right: 12px;
   }
 

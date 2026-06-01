@@ -1,0 +1,125 @@
+/* ── Press Start 2P (픽셀/아케이드 폰트) — index.html preload 와 함께 */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+/* ── 전체 배너 (헤더 바로 아래, 전체 가로폭) ─────────────────── */
+.bar {
+  position: absolute;
+  top: calc(16px + var(--header-h));   /* 헤더 bottom 에 딱 붙음 */
+  left: 0;
+  right: 0;
+  height: 36px;
+  z-index: 25;                         /* 지도(1) 위, 헤더(30) 아래 */
+
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+
+  /* LED 전광판 배경 */
+  background: #0a0a0a;
+  border-top:    1px solid #1a2e00;
+  border-bottom: 1px solid #1a2e00;
+
+  /* 미세한 CRT 스캔라인 오버레이 */
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.18) 2px,
+    rgba(0, 0, 0, 0.18) 4px
+  );
+}
+
+/* ── 좌측 고정 라벨 ─────────────────────────────────────────── */
+.label {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px 0 14px;
+  border-right: 1px solid #2a3a00;
+  height: 100%;
+}
+
+.labelIcon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.labelText {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 7px;
+  color: #c8ff00;
+  text-shadow:
+    0 0 4px #c8ff00,
+    0 0 10px #88ff00;
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+
+/* ── 스크롤 뷰포트 ──────────────────────────────────────────── */
+.viewport {
+  flex: 1;
+  overflow: hidden;
+  height: 100%;
+  position: relative;
+}
+
+/* 왼쪽 페이드아웃 마스크 */
+.viewport::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 24px;
+  background: linear-gradient(to right, #0a0a0a, transparent);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* ── 스크롤 트랙 (텍스트 × 2, -50% 애니메이션으로 무한 루프) ── */
+.track {
+  display: flex;
+  width: max-content;
+  height: 100%;
+  align-items: center;
+  animation: scroll var(--dur, 20s) linear infinite;
+  will-change: transform;
+}
+
+.text {
+  font-family: 'Press Start 2P', monospace;
+  font-size: 9px;
+  color: #c8ff00;
+  text-shadow:
+    0 0 5px #c8ff00,
+    0 0 12px #88ff00,
+    0 0 24px #44bb00;
+  white-space: nowrap;
+  line-height: 1;
+  padding-right: 40px;  /* 두 번째 복사본과의 간격 */
+  letter-spacing: 0.08em;
+}
+
+/* ── 스크롤 키프레임 (0 → -50% = 텍스트 1개 분량 이동) ─────── */
+@keyframes scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* ── 모바일: 헤더 top 이 16px → 10px 으로 줄어듦 ────────────── */
+@media (max-width: 480px) {
+  .bar {
+    top: calc(10px + var(--header-h));
+    height: 30px;
+    font-size: 8px;
+  }
+
+  .text {
+    font-size: 8px;
+  }
+
+  .labelText {
+    display: none;   /* 모바일: 아이콘만 */
+  }
+}

@@ -11,11 +11,11 @@
 }
 
 /* ── 사이드바 래퍼 (플로팅 카드) ─────── */
-/* 헤더 top(16) + 헤더 높이(--header-h) + 간격(12) */
+/* 헤더 top(16) + 헤더 높이(--header-h) + 공지바(--notice-h) + 간격(12) */
 .sidebarWrap {
   position: absolute;
   left: 16px;
-  top: calc(var(--header-h) + 28px);
+  top: calc(var(--header-h) + 28px + var(--notice-h, 0px));
   bottom: 16px;
   z-index: 20;
   width: var(--sidebar-w);

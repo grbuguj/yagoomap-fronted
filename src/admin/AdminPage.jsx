@@ -21,9 +21,11 @@ import {
   fetchStats,
   fetchHealth,
   fetchInfo,
+  fetchNotice,
+  updateNotice,
 } from '../api/adminApi'
 
-const TABS = ['대시보드', '통계', '제보 관리', '검수 후보', '카카오 검색', '장소 관리', '리뷰 관리']
+const TABS = ['대시보드', '통계', '제보 관리', '검수 후보', '카카오 검색', '장소 관리', '리뷰 관리', '공지사항']
 
 const STATUS_LABEL = {
   PENDING:   { label: '대기중',  cls: 'badgePending' },
@@ -1219,6 +1221,158 @@ function Monitoring() {
 }
 
 /* ────────────────────────────────────────────────
+   공지사항 관리
+──────────────────────────────────────────────── */
+function NoticeManagement() {
+  const [content, setContent] = useState('')
+  const [active, setActive]   = useState(false)
+  const [saving, setSaving]   = useState(false)
+  const [saved,  setSaved]    = useState(false)
+  const [error,  setError]    = useState(null)
+
+  // 현재 공지 로드
+  useEffect(() => {
+    fetchNotice()
+      .then(d => { setContent(d?.content ?? ''); setActive(d?.active ?? false) })
+      .catch(() => {})
+  }, [])
+
+  const handleSave = async () => {
+    setSaving(true); setError(null); setSaved(false)
+    try {
+      await updateNotice({ content: content.trim(), active })
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2500)
+    } catch (e) {
+      setError(e.message)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const previewText = content.trim() || '공지 내용을 입력하면 여기에 미리보기가 표시됩니다'
+
+  return (
+    <div>
+      <div className={styles.sectionHeader}>
+        <span className={styles.sectionTitle}>📢 LED 공지 배너 관리</span>
+      </div>
+
+      {/* 입력 폼 */}
+      <div className={`${styles.statCard} ${styles.mb24}`}>
+        <div className={styles.formGroupFull} style={{ marginBottom: 16 }}>
+          <label className={styles.label}>공지 내용 (최대 200자)</label>
+          <textarea
+            className={styles.textarea}
+            value={content}
+            onChange={e => setContent(e.target.value.slice(0, 200))}
+            placeholder="예: 🔴 야구맵 신규 가게 등록 이벤트 진행 중! 제보하고 스티커 받아가세요 ⚾"
+            style={{ minHeight: 80, resize: 'vertical' }}
+          />
+          <div style={{ textAlign: 'right', fontSize: 12, color: content.length > 180 ? '#C30452' : '#9ca3af', marginTop: 4 }}>
+            {content.length} / 200
+          </div>
+        </div>
+
+        {/* 활성화 토글 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+          <label style={{ fontSize: 14, fontWeight: 600, color: '#374151', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span
+              onClick={() => setActive(v => !v)}
+              style={{
+                display: 'inline-flex',
+                width: 44,
+                height: 24,
+                borderRadius: 12,
+                background: active ? '#C30452' : '#d1d5db',
+                position: 'relative',
+                cursor: 'pointer',
+                transition: 'background .2s',
+                flexShrink: 0,
+              }}
+            >
+              <span style={{
+                position: 'absolute',
+                top: 2,
+                left: active ? 22 : 2,
+                width: 20,
+                height: 20,
+                borderRadius: '50%',
+                background: '#fff',
+                boxShadow: '0 1px 4px rgba(0,0,0,.2)',
+                transition: 'left .2s',
+              }} />
+            </span>
+            배너 활성화
+          </label>
+          <span style={{ fontSize: 13, color: active ? '#065f46' : '#9ca3af' }}>
+            {active ? '🟢 현재 사용자에게 표시됨' : '⚫ 비활성 (배너 숨김)'}
+          </span>
+        </div>
+
+        {/* 저장 */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <button className={styles.btnPrimary} onClick={handleSave} disabled={saving}>
+            {saving ? '저장 중…' : '저장'}
+          </button>
+          {saved && <span style={{ fontSize: 13, color: '#059669', fontWeight: 600 }}>✓ 저장됐어요</span>}
+          {error && <span style={{ fontSize: 13, color: '#C30452' }}>⚠️ {error}</span>}
+        </div>
+      </div>
+
+      {/* LED 미리보기 */}
+      <div className={styles.sectionHeader}>
+        <span className={styles.sectionTitle}>미리보기</span>
+      </div>
+      <div className={`${styles.statCard} ${styles.mb24}`}>
+        <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 12 }}>
+          실제 앱 상단에 표시되는 모습 (배너 활성화 시):
+        </p>
+        <div style={{
+          background: '#0a0a0a',
+          borderRadius: 8,
+          height: 40,
+          overflow: 'hidden',
+          display: 'flex',
+          alignItems: 'center',
+          gap: 0,
+          backgroundImage: 'repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.18) 2px,rgba(0,0,0,.18) 4px)',
+          border: '1px solid #1a2e00',
+        }}>
+          {/* 라벨 */}
+          <div style={{ flexShrink: 0, padding: '0 12px', borderRight: '1px solid #2a3a00', height: '100%', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 13 }}>📢</span>
+            <span style={{
+              fontFamily: "'Press Start 2P', monospace",
+              fontSize: 7,
+              color: '#c8ff00',
+              textShadow: '0 0 4px #c8ff00, 0 0 10px #88ff00',
+              letterSpacing: '0.05em',
+            }}>NOTICE</span>
+          </div>
+          {/* 텍스트 (미리보기는 단순 고정 표시) */}
+          <div style={{ flex: 1, overflow: 'hidden', padding: '0 16px' }}>
+            <span style={{
+              fontFamily: "'Press Start 2P', monospace",
+              fontSize: active ? 9 : 8,
+              color: active ? '#c8ff00' : '#4a4a00',
+              textShadow: active ? '0 0 5px #c8ff00, 0 0 12px #88ff00, 0 0 24px #44bb00' : 'none',
+              whiteSpace: 'nowrap',
+              letterSpacing: '0.08em',
+            }}>
+              {active ? previewText + '   ⚾   ' + previewText : '(비활성 — 사용자에게 안 보임)'}
+            </span>
+          </div>
+        </div>
+        <p style={{ fontSize: 11, color: '#9ca3af', marginTop: 8 }}>
+          ⚡ 실제 앱에서는 우→좌 방향으로 무한 스크롤됩니다. 저장 후 페이지를 새로고침하면 확인할 수 있어요.
+        </p>
+      </div>
+    </div>
+  )
+}
+
+/* ────────────────────────────────────────────────
    메인
 ──────────────────────────────────────────────── */
 export default function AdminPage() {
@@ -1259,6 +1413,7 @@ export default function AdminPage() {
         {tab === 4 && <KakaoSearch />}
         {tab === 5 && <PlaceManagement teams={teams} />}
         {tab === 6 && <ReviewManagement />}
+        {tab === 7 && <NoticeManagement />}
       </main>
     </div>
   )

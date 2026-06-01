@@ -9,6 +9,7 @@ import ReportModal   from './components/ReportModal'
 import SidebarFooter from './components/SidebarFooter'
 import PolicyModal   from './components/PolicyModal'
 import WelcomeModal, { shouldShowWelcome } from './components/WelcomeModal'
+import NoticeBar from './components/NoticeBar'
 import { fetchVenues } from './api/venueApi'
 import { sendEvent, EVENT } from './api/events'
 import { TEAMS, MIXED_TEAM, isMixedTeam } from './data/teams'
@@ -238,6 +239,7 @@ function App() {
   return (
     <div className="app">
       <Header onReport={() => setShowReport(true)} />
+      <NoticeBar />
 
       <div className={`content${sidebarOpen ? '' : ' content--closed'}`}>
         <div className={`sidebarWrap${sidebarOpen ? '' : ' sidebarWrap--closed'}`}>

@@ -254,3 +254,15 @@ export async function fetchInfo() {
     return null
   }
 }
+
+/* ── 공지사항 ─────────────────────────────────────────────────
+ * GET  /api/notice          → { content, active }   (공개)
+ * PUT  /api/admin/notice    → { content, active }   (관리자)
+ */
+export function fetchNotice() {
+  return request('/api/notice')
+}
+
+export function updateNotice({ content, active }) {
+  return request('/api/admin/notice', { method: 'PUT', body: { content, active } })
+}

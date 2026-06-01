@@ -10,6 +10,7 @@ import SidebarFooter from './components/SidebarFooter'
 import PolicyModal   from './components/PolicyModal'
 import WelcomeModal, { shouldShowWelcome } from './components/WelcomeModal'
 import { fetchVenues } from './api/venueApi'
+import { sendEvent, EVENT } from './api/events'
 import { TEAMS, MIXED_TEAM, isMixedTeam } from './data/teams'
 import './App.css'
 
@@ -110,7 +111,10 @@ function App() {
   const handleHideSelector = useCallback((teamKey) => {
     // "목록 보기"로 특정 구단을 콕 집어 들어온 경우 → 그 구단만 표시
     // 체크 상태(selectedTeams)는 건드리지 않고 viewTeams만 바꿔 체크를 기억
-    if (typeof teamKey === 'string') setViewTeams([teamKey])
+    if (typeof teamKey === 'string') {
+      setViewTeams([teamKey])
+      sendEvent(EVENT.FILTER_TEAM, { team: teamKey })
+    }
     setShowTeamSelector(false)
     setKeyword('')
     setBoundsFilter(null)
@@ -121,6 +125,7 @@ function App() {
   const handleVenueSelect = useCallback((venue) => {
     setSelectedVenue(venue)
     setSidebarOpen(true)
+    sendEvent(EVENT.VIEW_VENUE, { placeId: venue?.id, team: venue?.team })
   }, [])
 
   const handleVenueClose = useCallback(() => {
@@ -175,6 +180,19 @@ function App() {
       .then(data => { setVenues(data); setVenuesLoading(false) })
       .catch(err  => { console.error(err); setVenuesError(err.message); setVenuesLoading(false) })
   }, [])
+
+  // ── 분석 이벤트: 페이지 진입 1회 ─────────────────────────────
+  useEffect(() => {
+    sendEvent(EVENT.PAGE_VIEW)
+  }, [])
+
+  // ── 분석 이벤트: 검색어(디바운스 700ms, 2글자 이상만) ────────
+  useEffect(() => {
+    const kw = keyword.trim()
+    if (kw.length < 2) return
+    const timer = setTimeout(() => sendEvent(EVENT.SEARCH, { keyword: kw }), 700)
+    return () => clearTimeout(timer)
+  }, [keyword])
 
   // ── 앱 시작 시 위치 요청 ─────────────────────────────────
   useEffect(() => {

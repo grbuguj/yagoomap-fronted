@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
 import { TEAM_CONFIG, MIXED_COLOR, isMixedTeam } from '../data/teams'
 import { fetchImages } from '../api/venueApi'
+import { sendEvent, EVENT } from '../api/events'
 import ReviewSection from './ReviewSection'
 import styles from './VenueDetail.module.css'
 
@@ -136,16 +137,20 @@ function VenueDetail({ venue, onClose, onCloseAll }) {
 
 
   // kakaoPlaceUrl 있으면 직접 링크, 없으면 이름 검색으로 fallback
-  const handleKakaoMap = () =>
+  const handleKakaoMap = () => {
+    sendEvent(EVENT.CLICK_KAKAO, { placeId: venue.id, team: venue.team })
     window.open(
       venue.kakaoPlaceUrl || `https://map.kakao.com/link/search/${encodeURIComponent(venue.name)}`,
       '_blank'
     )
-  const handleNaverMap = () =>
+  }
+  const handleNaverMap = () => {
+    sendEvent(EVENT.CLICK_NAVER, { placeId: venue.id, team: venue.team })
     window.open(
       venue.naverMapUrl || `https://map.naver.com/v5/search/${encodeURIComponent(venue.name)}`,
       '_blank'
     )
+  }
 
   const hasImgs = venueImgs.length > 0
 

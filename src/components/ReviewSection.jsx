@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { fetchReviews, submitReview, fetchReviewSummary } from '../api/venueApi'
+import { sendEvent, EVENT } from '../api/events'
 import styles from './ReviewSection.module.css'
 
 /* ── 별점 선택기 ─────────────────────────────────────── */
@@ -86,6 +87,7 @@ function ReviewSection({ venueId, onCountChange }) {
     if (!rating || !content.trim()) return
     setSubmitting(true)
     const newReview = await submitReview({ venueId, rating, content: content.trim() })
+    sendEvent(EVENT.WRITE_REVIEW, { placeId: venueId })
     setReviews(prev => {
       const updated = [newReview, ...prev]
       onCountChange?.(updated.length)

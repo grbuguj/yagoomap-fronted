@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { TEAMS } from '../data/teams'
 import { submitReport } from '../api/venueApi'
+import { sendEvent, EVENT } from '../api/events'
 import styles from './ReportModal.module.css'
 
 const INIT = { name: '', address: '', team: '', content: '' }
@@ -17,6 +18,7 @@ function ReportModal({ selectedTeam, onClose }) {
     if (!form.name.trim() || !form.address.trim()) return
     setSending(true)
     await submitReport(form)
+    sendEvent(EVENT.SUBMIT_REPORT, { team: form.team || null })
     setSending(false)
     setDone(true)
   }

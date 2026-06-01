@@ -213,3 +213,44 @@ export async function fetchTeams() {
       : { team: t.team, teamId: t.teamId }
   )
 }
+
+/* ── 운영 통계 (사용자 행동 이벤트 집계) ─────────────────────────
+ * GET /api/admin/stats?days=  (기본 7일, 1~90)
+ * 응답: AdminStats {
+ *   generatedAt, rangeDays, totalEvents, eventsToday, eventsInRange,
+ *   dauToday, activeSessionsInRange, kakaoClicks, naverClicks,
+ *   reportSubmits, reviewWrites,
+ *   byType:      [{ type, count }],
+ *   topVenues:   [{ placeId, name, count }],
+ *   topKeywords: [{ keyword, count }],
+ *   referrers:   [{ referrer, count }],
+ *   dailyTrend:  [{ date, count }]
+ * }
+ */
+export function fetchStats(days = 7) {
+  return request(`/api/admin/stats${qs({ days })}`)
+}
+
+/* ── 서버 상태 / 빌드 정보 (Spring Boot Actuator) ────────────────
+ * /actuator 는 /api 하위가 아니므로 로컬에선 vite proxy(/actuator)로 전달된다.
+ * 대시보드가 깨지지 않도록 실패해도 throw 하지 않고 null/추정값을 반환.
+ */
+export async function fetchHealth() {
+  try {
+    const res = await fetch(`${BASE_URL}/actuator/health`)
+    const data = await res.json().catch(() => null)
+    return data ?? { status: res.ok ? 'UP' : 'DOWN' }
+  } catch {
+    return null // 네트워크 실패 → 상태 알 수 없음
+  }
+}
+
+export async function fetchInfo() {
+  try {
+    const res = await fetch(`${BASE_URL}/actuator/info`)
+    if (!res.ok) return null
+    return res.json()
+  } catch {
+    return null
+  }
+}

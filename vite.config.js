@@ -13,6 +13,11 @@ export default defineConfig({
         target: 'http://localhost:8081',
         changeOrigin: true,
       },
+      // 모니터링 대시보드의 서버 상태/빌드 정보 패널용 (Spring Boot Actuator)
+      '/actuator': {
+        target: 'http://localhost:8081',
+        changeOrigin: true,
+      },
     },
   },
 })

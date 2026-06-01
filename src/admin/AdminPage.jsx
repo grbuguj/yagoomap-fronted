@@ -18,9 +18,12 @@ import {
   fetchPlaceReviews,
   deleteReview,
   fetchTeams,
+  fetchStats,
+  fetchHealth,
+  fetchInfo,
 } from '../api/adminApi'
 
-const TABS = ['대시보드', '제보 관리', '검수 후보', '카카오 검색', '장소 관리', '리뷰 관리']
+const TABS = ['대시보드', '통계', '제보 관리', '검수 후보', '카카오 검색', '장소 관리', '리뷰 관리']
 
 const STATUS_LABEL = {
   PENDING:   { label: '대기중',  cls: 'badgePending' },
@@ -1039,6 +1042,183 @@ function ReviewManagement() {
 }
 
 /* ────────────────────────────────────────────────
+   운영 통계 (사용자 행동 이벤트 집계 + 서버 상태)
+──────────────────────────────────────────────── */
+const TYPE_LABEL = {
+  PAGE_VIEW:     '페이지뷰',
+  SEARCH:        '검색',
+  VIEW_VENUE:    '가게 상세보기',
+  FILTER_TEAM:   '구단 필터',
+  CLICK_KAKAO:   '카카오맵 클릭',
+  CLICK_NAVER:   '네이버맵 클릭',
+  SUBMIT_REPORT: '제보 등록',
+  WRITE_REVIEW:  '리뷰 작성',
+  SHARE:         '공유',
+}
+
+const RANGE_OPTIONS = [
+  { days: 1,  label: '오늘' },
+  { days: 7,  label: '7일' },
+  { days: 14, label: '14일' },
+  { days: 30, label: '30일' },
+]
+
+/* 가로 막대 한 줄 (차트 라이브러리 없이 div 로 표현) */
+function Bar({ label, value, max, color = '#6366f1' }) {
+  const pct = max > 0 ? Math.round((value / max) * 100) : 0
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+      <div
+        style={{ width: 130, flexShrink: 0, fontSize: 13, color: '#374151', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        title={label}
+      >
+        {label}
+      </div>
+      <div style={{ flex: 1, background: '#f3f4f6', borderRadius: 6, height: 18 }}>
+        <div style={{ width: `${pct}%`, minWidth: value > 0 ? 3 : 0, background: color, height: '100%', borderRadius: 6, transition: 'width .3s' }} />
+      </div>
+      <div style={{ width: 52, flexShrink: 0, textAlign: 'right', fontSize: 13, fontWeight: 600, color: '#111827' }}>
+        {value.toLocaleString()}
+      </div>
+    </div>
+  )
+}
+
+function Monitoring() {
+  const [days, setDays]       = useState(7)
+  const [stats, setStats]     = useState(null)
+  const [health, setHealth]   = useState(null)
+  const [info, setInfo]       = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError]     = useState(null)
+
+  const load = useCallback((d) => {
+    setLoading(true)
+    setError(null)
+    Promise.all([fetchStats(d), fetchHealth(), fetchInfo()])
+      .then(([s, h, i]) => { setStats(s); setHealth(h); setInfo(i); setLoading(false) })
+      .catch(err => { setError(err.message); setLoading(false) })
+  }, [])
+
+  useEffect(() => { load(days) }, [days, load])
+
+  if (loading) return <Loading />
+  if (error)   return <ErrorBox message={error} onRetry={() => load(days)} />
+  if (!stats)  return null
+
+  const byTypeMax = Math.max(1, ...(stats.byType ?? []).map(t => t.count))
+  const dailyMax  = Math.max(1, ...(stats.dailyTrend ?? []).map(d => d.count))
+  const refMax    = Math.max(1, ...(stats.referrers ?? []).map(r => r.count))
+
+  const healthUp  = health?.status === 'UP'
+  const buildVer  = info?.build?.version ?? info?.app?.version
+  const buildTime = info?.build?.time
+  const javaVer   = info?.java?.version ?? info?.java?.runtime?.version
+
+  return (
+    <>
+      {/* 기간 선택 + 새로고침 */}
+      <div className={styles.sectionHeader}>
+        <div className={styles.sectionTitle}>운영 통계</div>
+        <div className={styles.btnRow}>
+          {RANGE_OPTIONS.map(o => (
+            <button
+              key={o.days}
+              className={styles.btnPrimary}
+              style={days === o.days ? undefined : { background: '#e5e7eb', color: '#374151' }}
+              onClick={() => setDays(o.days)}
+            >
+              {o.label}
+            </button>
+          ))}
+          <button className={styles.btnPrimary} onClick={() => load(days)} disabled={loading}>새로고침</button>
+        </div>
+      </div>
+
+      {/* 서버 상태 배너 */}
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 16, background: '#fff', border: '1px solid #e5e7eb', borderRadius: 12, padding: '14px 18px', marginBottom: 20 }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, fontWeight: 700 }}>
+          <span style={{ width: 10, height: 10, borderRadius: '50%', background: health == null ? '#9ca3af' : healthUp ? '#22c55e' : '#ef4444' }} />
+          서버 {health == null ? '확인 불가' : healthUp ? '정상 (UP)' : '점검 필요 (DOWN)'}
+        </span>
+        {buildVer  && <span style={{ fontSize: 13, color: '#6b7280' }}>버전 <b style={{ color: '#374151' }}>{buildVer}</b></span>}
+        {javaVer   && <span style={{ fontSize: 13, color: '#6b7280' }}>Java {javaVer}</span>}
+        {buildTime && <span style={{ fontSize: 13, color: '#6b7280' }}>빌드 {formatDate(buildTime)}</span>}
+        <span style={{ marginLeft: 'auto', fontSize: 12, color: '#9ca3af' }}>
+          집계 {formatDate(stats.generatedAt)} · 최근 {stats.rangeDays}일
+        </span>
+      </div>
+
+      {/* 핵심 지표 카드 */}
+      <div className={styles.statGrid}>
+        <div className={styles.statCard}><div className={styles.statLabel}>오늘 방문자(DAU)</div><div className={styles.statValue}>{stats.dauToday.toLocaleString()}</div></div>
+        <div className={styles.statCard}><div className={styles.statLabel}>오늘 이벤트</div><div className={styles.statValue}>{stats.eventsToday.toLocaleString()}</div></div>
+        <div className={styles.statCard}><div className={styles.statLabel}>기간 내 세션</div><div className={styles.statValue}>{stats.activeSessionsInRange.toLocaleString()}</div></div>
+        <div className={styles.statCard}><div className={styles.statLabel}>기간 내 이벤트</div><div className={styles.statValue}>{stats.eventsInRange.toLocaleString()}</div></div>
+      </div>
+      <div className={styles.statGrid}>
+        <div className={styles.statCard}><div className={styles.statLabel}>카카오맵 클릭</div><div className={styles.statValue}>{stats.kakaoClicks.toLocaleString()}</div></div>
+        <div className={styles.statCard}><div className={styles.statLabel}>네이버맵 클릭</div><div className={styles.statValue}>{stats.naverClicks.toLocaleString()}</div></div>
+        <div className={styles.statCard}><div className={styles.statLabel}>제보 등록</div><div className={styles.statValue}>{stats.reportSubmits.toLocaleString()}</div></div>
+        <div className={styles.statCard}><div className={styles.statLabel}>리뷰 작성</div><div className={styles.statValue}>{stats.reviewWrites.toLocaleString()}</div></div>
+      </div>
+
+      {/* 일별 추이 */}
+      <div className={styles.mb24} style={{ marginTop: 8 }}>
+        <div className={styles.sectionTitle} style={{ marginBottom: 16 }}>일별 이벤트 추이</div>
+        {(stats.dailyTrend ?? []).length === 0
+          ? <div className={styles.empty}>데이터가 없습니다</div>
+          : stats.dailyTrend.map(d => <Bar key={d.date} label={d.date} value={d.count} max={dailyMax} color="#6366f1" />)}
+      </div>
+
+      {/* 이벤트 유형별 */}
+      <div className={styles.mb24}>
+        <div className={styles.sectionTitle} style={{ marginBottom: 16 }}>이벤트 유형별</div>
+        {(stats.byType ?? []).length === 0
+          ? <div className={styles.empty}>데이터가 없습니다</div>
+          : stats.byType.map(t => <Bar key={t.type} label={TYPE_LABEL[t.type] ?? t.type} value={t.count} max={byTypeMax} color="#0ea5e9" />)}
+      </div>
+
+      {/* 인기 가게 / 인기 검색어 */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24, marginBottom: 24 }}>
+        <div>
+          <div className={styles.sectionTitle} style={{ marginBottom: 16 }}>인기 가게 (상세보기 기준)</div>
+          <table className={styles.table}>
+            <thead><tr><th>가게명</th><th style={{ textAlign: 'right' }}>조회수</th></tr></thead>
+            <tbody>
+              {(stats.topVenues ?? []).length === 0 && <tr><td colSpan={2} className={styles.empty}>데이터가 없습니다</td></tr>}
+              {(stats.topVenues ?? []).map(v => (
+                <tr key={v.placeId}><td><b>{v.name}</b></td><td style={{ textAlign: 'right' }}>{v.count.toLocaleString()}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div>
+          <div className={styles.sectionTitle} style={{ marginBottom: 16 }}>인기 검색어</div>
+          <table className={styles.table}>
+            <thead><tr><th>검색어</th><th style={{ textAlign: 'right' }}>횟수</th></tr></thead>
+            <tbody>
+              {(stats.topKeywords ?? []).length === 0 && <tr><td colSpan={2} className={styles.empty}>데이터가 없습니다</td></tr>}
+              {(stats.topKeywords ?? []).map((k, idx) => (
+                <tr key={`${k.keyword}-${idx}`}><td>{k.keyword}</td><td style={{ textAlign: 'right' }}>{k.count.toLocaleString()}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* 유입 경로 */}
+      <div>
+        <div className={styles.sectionTitle} style={{ marginBottom: 16 }}>유입 경로</div>
+        {(stats.referrers ?? []).length === 0
+          ? <div className={styles.empty}>데이터가 없습니다</div>
+          : stats.referrers.map(r => <Bar key={r.referrer} label={r.referrer} value={r.count} max={refMax} color="#10b981" />)}
+      </div>
+    </>
+  )
+}
+
+/* ────────────────────────────────────────────────
    메인
 ──────────────────────────────────────────────── */
 export default function AdminPage() {
@@ -1073,11 +1253,12 @@ export default function AdminPage() {
 
       <main className={styles.body}>
         {tab === 0 && <Dashboard />}
-        {tab === 1 && <ReportManagement teams={teams} />}
-        {tab === 2 && <CandidateManagement teams={teams} />}
-        {tab === 3 && <KakaoSearch />}
-        {tab === 4 && <PlaceManagement teams={teams} />}
-        {tab === 5 && <ReviewManagement />}
+        {tab === 1 && <Monitoring />}
+        {tab === 2 && <ReportManagement teams={teams} />}
+        {tab === 3 && <CandidateManagement teams={teams} />}
+        {tab === 4 && <KakaoSearch />}
+        {tab === 5 && <PlaceManagement teams={teams} />}
+        {tab === 6 && <ReviewManagement />}
       </main>
     </div>
   )

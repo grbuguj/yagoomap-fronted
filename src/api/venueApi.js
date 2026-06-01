@@ -167,7 +167,7 @@ export async function submitReport(data) {
     placeName:     data.name,
     address:       data.address,
     team:          data.team          || null,
-    teamId:        data.teamId        ?? null,
+    teamId:        data.teamId        ?? 0,
     content:       data.content       || null,
     referenceLink: data.referenceLink ?? null,
   }

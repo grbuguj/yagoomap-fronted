@@ -269,12 +269,10 @@ function VenueDetail({ venue, onClose, onCloseAll }) {
           )}
         </div>
 
-        {/* 4. 중계 확인 안내 — note 있으면 숨김 */}
-        {!venue.note && (
-          <p className={styles.notice}>
-            📞 정확한 중계 여부는 가게에 전화로 확인하세요
-          </p>
-        )}
+        {/* 4. 중계 확인 안내 — 항상 표시 */}
+        <p className={styles.notice}>
+          📞 정확한 중계 여부는 가게에 전화로 확인하세요
+        </p>
 
         {/* 5. 운영 메모 (note) */}
         {venue.note && (

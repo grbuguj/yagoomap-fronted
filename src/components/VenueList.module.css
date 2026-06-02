@@ -142,16 +142,17 @@
   white-space: nowrap;
 }
 
-.mixedTag {
+/* 특정 구단 전용 가게 배지 (팀 컬러는 인라인 지정) */
+.teamBadge {
   flex-shrink: 0;
   font-size: 10px;
-  font-weight: 700;
-  color: #6b7280;
-  background: #f1f3f5;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
+  font-weight: 800;
+  color: #fff;
+  border-radius: 5px;
   padding: 1px 6px;
   white-space: nowrap;
+  letter-spacing: 0.2px;
+  line-height: 1.55;
 }
 
 .stars {

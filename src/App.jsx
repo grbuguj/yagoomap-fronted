@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import Header        from './components/Header'
 import SearchBar      from './components/SearchBar'
-import TeamFilterChips from './components/TeamFilterChips'
+import TeamFilterDropdown from './components/TeamFilterDropdown'
 import VenueList      from './components/VenueList'
 import VenueDetail   from './components/VenueDetail'
 import KakaoMap      from './components/KakaoMap'
@@ -15,12 +15,10 @@ import { fetchVenues } from './api/venueApi'
 import { fetchTodayGames } from './api/gamesApi'
 import { sendEvent, EVENT } from './api/events'
 import { useFavorites } from './hooks/useFavorites'
-import { isMixedTeam, MIXED_EMOJI } from './data/teams'
 import './App.css'
 
 function App() {
-  // 초기값: 가게 데이터 로드 후 가용 팀 자동 선택 (아래 effect)
-  const [activeFilter,     setActiveFilter]     = useState('ALL') // 'ALL'|'FAV'|'MIXED'|<teamKey>
+  const [activeFilter,     setActiveFilter]     = useState('ALL') // 'ALL'|'FAV'|<teamKey>
   const [keyword,          setKeyword]          = useState('')
   const [selectedVenue,    setSelectedVenue]    = useState(null)
   const [showReport,       setShowReport]       = useState(false)
@@ -50,12 +48,6 @@ function App() {
     return m
   }, [venues])
 
-  // 혼합 응원(특정 구단 전용 아님) 가게 수
-  const mixedCount = useMemo(
-    () => venues.filter(v => isMixedTeam(v.team)).length,
-    [venues]
-  )
-
   // ── 즐겨찾기 ─────────────────────────────────────────────
   const { favorites } = useFavorites()
   // 실제 존재하는 가게 중 즐겨찾기된 것만 (삭제된 가게 id는 제외)
@@ -64,13 +56,13 @@ function App() {
     [venues, favorites]
   )
 
-  // ── 필터 칩 변경 (전체/찜/혼합/구단) ─────────────────────
+  // ── 필터 변경 (전체/찜/구단) ─────────────────────────────
   const handleFilterChange = useCallback((key) => {
     setActiveFilter(key)
     setSelectedVenue(null)
     setBoundsFilter(null)
     setMapMoved(false)
-    if (key !== 'ALL' && key !== 'FAV' && key !== 'MIXED') {
+    if (key !== 'ALL' && key !== 'FAV') {
       sendEvent(EVENT.FILTER_TEAM, { team: key })
     }
   }, [])
@@ -205,11 +197,10 @@ function App() {
   }, [keyword, boundsFilter])
 
   // ── 필터링 ───────────────────────────────────────────────
-  // 활성 칩 기준 가게 모음 (전체/찜/혼합/특정 구단)
+  // 활성 필터 기준 가게 모음 (전체/찜/특정 구단)
   const baseVenues = useMemo(() => {
-    if (activeFilter === 'FAV')   return favoriteVenues
-    if (activeFilter === 'MIXED') return venues.filter(v => isMixedTeam(v.team))
-    if (activeFilter === 'ALL')   return venues
+    if (activeFilter === 'FAV') return favoriteVenues
+    if (activeFilter === 'ALL') return venues
     return venues.filter(v => v.team === activeFilter)
   }, [activeFilter, venues, favoriteVenues])
 
@@ -219,9 +210,8 @@ function App() {
 
   // 목록 헤더 라벨
   const filterLabel =
-    activeFilter === 'ALL'   ? '전체'
-    : activeFilter === 'FAV'   ? '⭐ 즐겨찾기'
-    : activeFilter === 'MIXED' ? `${MIXED_EMOJI} 혼합 응원`
+    activeFilter === 'ALL' ? '전체'
+    : activeFilter === 'FAV' ? '⭐ 즐겨찾기'
     : activeFilter
 
   // 빈 상태 아이콘/문구 (찜 / 검색중 / 일반)
@@ -230,8 +220,8 @@ function App() {
     : keyword.trim()       ? { icon: '🔍', text: '검색 결과가 없어요', hint: '다른 가게명이나 주소로 찾아보세요' }
     :                        { icon: '⚾', text: '등록된 가게가 없어요', hint: '곧 추가될 예정이에요' }
 
-  // KakaoMap/리포트에 넘길 단일 팀값 (특정 구단 칩일 때만)
-  const primaryTeam = (activeFilter !== 'ALL' && activeFilter !== 'FAV' && activeFilter !== 'MIXED')
+  // KakaoMap/리포트에 넘길 단일 팀값 (특정 구단 선택 시에만)
+  const primaryTeam = (activeFilter !== 'ALL' && activeFilter !== 'FAV')
     ? activeFilter : null
 
   return (
@@ -253,18 +243,21 @@ function App() {
           </button>
 
           <aside className="sidebar">
-            {/* 검색 + 구단 필터 칩 (상세 뷰만 제외) */}
+            {/* 검색 + 구단 필터 드롭다운 (상세 뷰만 제외) */}
             {!selectedVenue && (
               <div className="sidebarTop">
-                <SearchBar value={keyword} onChange={setKeyword} />
-                <TeamFilterChips
-                  activeFilter={activeFilter}
-                  onChange={handleFilterChange}
-                  teamCounts={teamCounts}
-                  mixedCount={mixedCount}
-                  favoritesCount={favoriteVenues.length}
-                  totalCount={venues.length}
-                />
+                <div className="filterRow">
+                  <div className="filterRowSearch">
+                    <SearchBar value={keyword} onChange={setKeyword} />
+                  </div>
+                  <TeamFilterDropdown
+                    activeFilter={activeFilter}
+                    onChange={handleFilterChange}
+                    teamCounts={teamCounts}
+                    favoritesCount={favoriteVenues.length}
+                    totalCount={venues.length}
+                  />
+                </div>
               </div>
             )}
 

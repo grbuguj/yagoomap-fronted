@@ -52,6 +52,18 @@
   border-bottom: 1px solid var(--clr-border);
 }
 
+/* 검색바 + 구단 필터 드롭다운 한 줄 */
+.filterRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filterRowSearch {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 .sidebarBody {
   flex: 1;
   overflow-y: auto;

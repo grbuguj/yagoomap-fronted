@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { TEAM_CONFIG, isMixedTeam } from '../data/teams'
+import { TEAM_CONFIG } from '../data/teams'
 import FavoriteButton from './FavoriteButton'
 import styles from './VenueList.module.css'
 
@@ -126,7 +126,7 @@ function VenueList({ venues, selectedTeams = [], onSelect, onOpenSelector, title
 
       {venues.map(venue => {
         const vTeamColor = TEAM_CONFIG[venue.team]?.color || teamColor
-        const mixed      = isMixedTeam(venue.team)
+        const teamShort  = TEAM_CONFIG[venue.team]?.shortName
         return (
         <li key={venue.id} className={styles.item} onClick={() => onSelect(venue)}>
           <div className={styles.itemLeft}>
@@ -137,7 +137,11 @@ function VenueList({ venues, selectedTeams = [], onSelect, onOpenSelector, title
             <div className={styles.nameRow}>
               <span className={styles.nameWrap}>
                 <span className={styles.name}>{venue.name}</span>
-                {mixed && <span className={styles.mixedTag}>🍻 혼합</span>}
+                {teamShort && (
+                  <span className={styles.teamBadge} style={{ background: vTeamColor }}>
+                    {teamShort}
+                  </span>
+                )}
               </span>
               <Stars rating={venue.rating} />
             </div>

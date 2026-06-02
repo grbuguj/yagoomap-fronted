@@ -12,11 +12,11 @@
 }
 
 /* ── 사이드바 래퍼 (플로팅 카드) ─────── */
-/* 헤더 top(16) + 헤더 높이(--header-h) + 공지바(--notice-h) + 간격(12) */
+/* 헤더 top(16) + 헤더 높이(--header-h) + 공지바(--notice-h) + 경기바(--games-h) + 간격(12) */
 .sidebarWrap {
   position: absolute;
   left: 16px;
-  top: calc(var(--header-h) + 28px + var(--notice-h, 0px));
+  top: calc(var(--header-h) + 28px + var(--notice-h, 0px) + var(--games-h, 0px));
   bottom: 16px;
   z-index: 20;
   width: var(--sidebar-w);
@@ -326,7 +326,7 @@
   /* 내 위치 버튼: 헤더 + 공지 배너(있을 경우) 아래 */
   .locateBtn {
     bottom: auto;
-    top: calc(88px + var(--notice-h, 0px));
+    top: calc(88px + var(--notice-h, 0px) + var(--games-h, 0px));
     right: 12px;
   }
 

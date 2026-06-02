@@ -301,6 +301,8 @@ function App() {
     <div className="app">
       <Header onReport={() => setShowReport(true)} />
       <NoticeBar />
+      {/* 오늘의 경기: NOTICE 전광판 바로 아래 풀폭 LED 스코어보드 한 줄 */}
+      <TodayGamesBar games={todayGames} />
 
       <div className={`content${sidebarOpen ? '' : ' content--closed'}`}>
         <div className={`sidebarWrap${sidebarOpen ? '' : ' sidebarWrap--closed'}`}>
@@ -314,9 +316,6 @@ function App() {
           </button>
 
           <aside className="sidebar">
-            {/* 오늘의 경기 바: 상세 화면 제외하고 상단 노출 */}
-            {!selectedVenue && <TodayGamesBar games={todayGames} />}
-
             {/* 검색바: 목록 뷰에서만 */}
             {!showTeamSelector && !selectedVenue && (
               <div className="sidebarTop">

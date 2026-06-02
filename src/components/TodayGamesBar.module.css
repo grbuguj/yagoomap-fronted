@@ -1,115 +1,175 @@
-.wrap {
-  flex-shrink: 0;
-  padding: 10px 0 10px 14px;
-  border-bottom: 1px solid var(--clr-border);
-  background: linear-gradient(180deg, #fff 0%, #fafbfc 100%);
-}
+/* ── Galmuri11 (NOTICE 전광판과 동일 픽셀 폰트) ── */
+@import url('https://cdn.jsdelivr.net/npm/galmuri/dist/galmuri.css');
 
-.head {
+/* ── 오늘의 경기 LED 스코어보드 (NOTICE 전광판 바로 아래 한 줄) ───── */
+.board {
+  position: absolute;
+  /* NOTICE 아래 스택 — 공지 없으면 --notice-h=0 이라 헤더 바로 아래로 */
+  top: calc(16px + var(--header-h) + var(--notice-h, 0px));
+  left: 0;
+  right: 0;
+  height: 36px;
+  z-index: 24;                         /* NOTICE(25) 아래, 사이드바(20)·지도(1) 위 */
+
   display: flex;
   align-items: center;
-  gap: 5px;
-  margin-bottom: 8px;
-  padding-right: 14px;
+  overflow: hidden;
+
+  /* LED 전광판 배경 */
+  background: #0a0a0a;
+  border-bottom: 1px solid #1a2e00;
+
+  /* CRT 스캔라인 오버레이 */
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.18) 2px,
+    rgba(0, 0, 0, 0.18) 4px
+  );
 }
 
-.headIcon {
+/* ── 좌측 고정 라벨 ─────────────────────────────────────────── */
+.label {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px 0 14px;
+  border-right: 1px solid #2a3a00;
+  height: 100%;
+}
+
+.labelIcon {
   font-size: 13px;
+  line-height: 1;
 }
 
-.headText {
-  font-size: 12px;
+.labelText {
+  font-family: 'Galmuri11', monospace;
+  font-size: 11px;
   font-weight: 700;
-  color: var(--clr-text);
+  color: #c8ff00;
+  text-shadow: 0 0 4px #c8ff00, 0 0 10px #88ff00;
+  letter-spacing: 0.06em;
+  line-height: 1;
 }
 
-.scroller {
+/* ── 경기 칸 스크롤 영역 ────────────────────────────────────── */
+.cells {
+  flex: 1;
   display: flex;
-  gap: 8px;
+  align-items: center;
+  height: 100%;
   overflow-x: auto;
-  padding-right: 14px;
-  padding-bottom: 2px;
+  overflow-y: hidden;
   scrollbar-width: none;
+  min-width: 0;
 }
 
-.scroller::-webkit-scrollbar {
-  display: none;
-}
+.cells::-webkit-scrollbar { display: none; }
 
-.chip {
+/* 우측 페이드 마스크 (스크롤 더 있음을 암시) */
+.cells::after {
+  content: '';
+  position: sticky;
+  right: 0;
+  width: 20px;
+  height: 100%;
   flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  min-width: 96px;
-  padding: 8px 10px;
-  border: 1px solid var(--clr-border);
-  border-radius: 12px;
-  background: #fff;
+  background: linear-gradient(to left, #0a0a0a, transparent);
+  pointer-events: none;
 }
 
-.chipCanceled {
-  opacity: 0.55;
-}
-
-.teams {
-  display: flex;
+/* ── 한 경기 칸 ─────────────────────────────────────────────── */
+.cell {
+  flex-shrink: 0;
+  display: inline-flex;
   align-items: center;
-  gap: 7px;
-  font-size: 13px;
-  font-weight: 800;
+  gap: 6px;
+  height: 100%;
+  padding: 0 14px;
+  border-right: 1px solid #1a2e00;
+  font-family: 'Galmuri11', monospace;
   white-space: nowrap;
+  line-height: 1;
 }
+
+.cellOff { opacity: 0.42; }
 
 .team {
-  font-weight: 800;
-}
-
-.time {
   font-size: 12px;
-  font-weight: 700;
-  color: var(--clr-muted);
+  color: #c8ff00;
+  text-shadow: 0 0 4px #c8ff00, 0 0 11px #88ff00;
+  letter-spacing: 0.02em;
 }
 
 .score {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--clr-text);
+  font-size: 13px;
+  font-weight: 700;
+  color: #e8ff80;
+  text-shadow: 0 0 5px #c8ff00, 0 0 13px #88ff00;
 }
 
 .colon {
   margin: 0 2px;
-  color: var(--clr-muted);
+  color: #9acf00;
 }
 
-.canceled {
+.vs {
+  font-size: 10px;
+  color: #6f9a00;
+  letter-spacing: 0.04em;
+}
+
+.time {
   font-size: 11px;
-  font-weight: 700;
-  color: var(--clr-muted);
+  color: #ffb733;   /* 앰버 — 예정 경기 시각 */
+  text-shadow: 0 0 5px rgba(255, 160, 32, 0.55);
 }
 
-.meta {
-  display: flex;
+.fin {
+  font-size: 10px;
+  color: #7f9a3a;
+  letter-spacing: 0.03em;
+}
+
+.live {
+  display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 10.5px;
-  color: var(--clr-muted);
-  white-space: nowrap;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-size: 10px;
+  font-weight: 700;
+  color: #ff6a6a;
+  text-shadow: 0 0 5px #ff2a2a, 0 0 12px #ff0000;
+  letter-spacing: 0.05em;
 }
 
 .liveDot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #ef4444;
-  animation: livePulse 1.2s ease-in-out infinite;
+  background: #ff3a3a;
+  box-shadow: 0 0 6px #ff2a2a, 0 0 12px #ff0000;
+  animation: gamesLivePulse 1.2s ease-in-out infinite;
 }
 
-@keyframes livePulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50%      { opacity: 0.4; transform: scale(0.8); }
+@keyframes gamesLivePulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.3; }
+}
+
+/* ── 모바일: NOTICE 와 동일하게 축소 (top 베이스 16→10) ──────── */
+@media (max-width: 480px) {
+  .board {
+    top: calc(10px + var(--header-h) + var(--notice-h, 0px));
+    height: 30px;
+  }
+
+  .labelText { display: none; }   /* 아이콘만 */
+  .label { padding: 0 10px; }
+
+  .team { font-size: 11px; }
+  .score { font-size: 12px; }
+  .cell { padding: 0 11px; gap: 5px; }
 }

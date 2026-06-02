@@ -1086,6 +1086,38 @@ function Bar({ label, value, max, color = '#6366f1' }) {
   )
 }
 
+/* 세로 막대 차트 (일별 추이용) */
+function DailyChart({ data, color = '#6366f1', height = 150 }) {
+  if (!data || data.length === 0) return <div style={{ color: '#9ca3af', padding: 16, fontSize: 14 }}>데이터가 없습니다</div>
+  const max = Math.max(1, ...data.map(d => d.count))
+  return (
+    <div style={{ overflowX: 'auto' }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 4, minWidth: data.length * 36, height: height + 44, padding: '8px 4px 0' }}>
+        {data.map(d => {
+          const barH = Math.max(d.count > 0 ? 3 : 0, Math.round((d.count / max) * height))
+          const label = (d.date ?? '').length >= 7 ? d.date.slice(5) : (d.date ?? '')
+          return (
+            <div key={d.date} style={{ flex: '1 0 28px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, minWidth: 28 }}>
+              <div style={{ fontSize: 11, fontWeight: 600, color: '#374151', lineHeight: 1 }}>
+                {d.count > 0 ? d.count.toLocaleString() : ''}
+              </div>
+              <div style={{
+                width: '65%', height: barH,
+                background: color, borderRadius: '3px 3px 0 0',
+                transition: 'height .4s ease'
+              }} />
+              <div style={{ height: 1, width: '100%', background: '#e5e7eb' }} />
+              <div style={{ fontSize: 10, color: '#9ca3af', lineHeight: 1.3, textAlign: 'center', whiteSpace: 'nowrap' }}>
+                {label}
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 function Monitoring() {
   const [days, setDays]       = useState(7)
   const [stats, setStats]     = useState(null)
@@ -1165,12 +1197,16 @@ function Monitoring() {
         <div className={styles.statCard}><div className={styles.statLabel}>리뷰 작성</div><div className={styles.statValue}>{stats.reviewWrites.toLocaleString()}</div></div>
       </div>
 
-      {/* 일별 추이 */}
+      {/* 일별 방문자(DAU) 추이 */}
       <div className={styles.mb24} style={{ marginTop: 8 }}>
-        <div className={styles.sectionTitle} style={{ marginBottom: 16 }}>일별 이벤트 추이</div>
-        {(stats.dailyTrend ?? []).length === 0
-          ? <div className={styles.empty}>데이터가 없습니다</div>
-          : stats.dailyTrend.map(d => <Bar key={d.date} label={d.date} value={d.count} max={dailyMax} color="#6366f1" />)}
+        <div className={styles.sectionTitle} style={{ marginBottom: 12 }}>일별 방문자(DAU) 추이</div>
+        <DailyChart data={stats.dailyDauTrend} color="#6366f1" />
+      </div>
+
+      {/* 일별 이벤트 추이 */}
+      <div className={styles.mb24}>
+        <div className={styles.sectionTitle} style={{ marginBottom: 12 }}>일별 이벤트 추이</div>
+        <DailyChart data={stats.dailyTrend} color="#0ea5e9" />
       </div>
 
       {/* 이벤트 유형별 */}

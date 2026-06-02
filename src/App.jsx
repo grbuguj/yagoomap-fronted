@@ -12,6 +12,7 @@ import WelcomeModal, { shouldShowWelcome } from './components/WelcomeModal'
 import NoticeBar from './components/NoticeBar'
 import { fetchVenues } from './api/venueApi'
 import { sendEvent, EVENT } from './api/events'
+import { useFavorites } from './hooks/useFavorites'
 import { TEAMS, MIXED_TEAM, isMixedTeam } from './data/teams'
 import './App.css'
 
@@ -45,6 +46,7 @@ function App() {
   const [selectedTeams,    setSelectedTeams]    = useState([])  // 구단선택 화면의 체크 상태(기억됨)
   const [viewTeams,        setViewTeams]        = useState([])  // 목록/지도에 실제로 보여줄 팀(목록보기로 진입 시)
   const [showTeamSelector, setShowTeamSelector] = useState(true)
+  const [favView,          setFavView]          = useState(false) // 즐겨찾기만 보기
   const [keyword,          setKeyword]          = useState('')
   const [selectedVenue,    setSelectedVenue]    = useState(null)
   const [showReport,       setShowReport]       = useState(false)
@@ -85,6 +87,14 @@ function App() {
     [venues]
   )
 
+  // ── 즐겨찾기 ─────────────────────────────────────────────
+  const { favorites } = useFavorites()
+  // 실제 존재하는 가게 중 즐겨찾기된 것만 (삭제된 가게 id는 제외)
+  const favoriteVenues = useMemo(
+    () => venues.filter(v => favorites.includes(v.id)),
+    [venues, favorites]
+  )
+
   // 데이터 첫 로드 시 가용 팀(+혼합) 전체 선택 (1회)
   useEffect(() => {
     if (!teamsInitedRef.current && (availableTeams.length > 0 || mixedCount > 0)) {
@@ -107,6 +117,7 @@ function App() {
   const handleShowSelector  = useCallback(() => {
     setShowTeamSelector(true)
     setSelectedVenue(null)
+    setFavView(false)
   }, [])
 
   const handleHideSelector = useCallback((teamKey) => {
@@ -116,7 +127,18 @@ function App() {
       setViewTeams([teamKey])
       sendEvent(EVENT.FILTER_TEAM, { team: teamKey })
     }
+    setFavView(false)
     setShowTeamSelector(false)
+    setKeyword('')
+    setBoundsFilter(null)
+    setMapMoved(false)
+  }, [])
+
+  // 즐겨찾기 목록으로 진입
+  const handleShowFavorites = useCallback(() => {
+    setFavView(true)
+    setShowTeamSelector(false)
+    setSelectedVenue(null)
     setKeyword('')
     setBoundsFilter(null)
     setMapMoved(false)
@@ -218,20 +240,41 @@ function App() {
     )
   }, [])
 
+  // 즐겨찾기 보기에서는 키워드/지도범위만 추가로 적용
+  const filterByKwBounds = useCallback((list) => {
+    let out = list
+    if (keyword.trim()) {
+      const kw = keyword.trim().toLowerCase()
+      out = out.filter(v =>
+        v.name.toLowerCase().includes(kw) || v.address.toLowerCase().includes(kw)
+      )
+    }
+    if (boundsFilter) {
+      out = out.filter(v =>
+        v.lat >= boundsFilter.swLat && v.lat <= boundsFilter.neLat &&
+        v.lng >= boundsFilter.swLng && v.lng <= boundsFilter.neLng
+      )
+    }
+    return out
+  }, [keyword, boundsFilter])
+
   // ── 필터링 ───────────────────────────────────────────────
-  // 목록: 포커스 팀(목록보기로 들어온 팀)만 — "그 구단 목록만"
+  // 목록: 즐겨찾기 보기면 즐겨찾기만, 아니면 포커스 팀(목록보기로 들어온 팀)만
   const listVenues = useMemo(
-    () => selectVenues(venues, focusTeams, availableTeams, mixedCount, keyword, boundsFilter),
-    [venues, focusTeams, availableTeams, mixedCount, keyword, boundsFilter]
+    () => favView
+      ? filterByKwBounds(favoriteVenues)
+      : selectVenues(venues, focusTeams, availableTeams, mixedCount, keyword, boundsFilter),
+    [favView, filterByKwBounds, favoriteVenues, venues, focusTeams, availableTeams, mixedCount, keyword, boundsFilter]
   )
 
-  // 지도: 항상 체크된 팀 전체(+현재 보고 있는 팀) — 체크된 마커는 계속 표시
+  // 지도: 즐겨찾기 보기면 즐겨찾기만, 아니면 체크된 팀 전체(+현재 보고 있는 팀)
   const mapVenues = useMemo(() => {
+    if (favView) return filterByKwBounds(favoriteVenues)
     const teams = showTeamSelector
       ? selectedTeams
       : Array.from(new Set([...selectedTeams, ...viewTeams]))
     return selectVenues(venues, teams, availableTeams, mixedCount, keyword, boundsFilter)
-  }, [venues, showTeamSelector, selectedTeams, viewTeams, availableTeams, mixedCount, keyword, boundsFilter])
+  }, [favView, filterByKwBounds, favoriteVenues, venues, showTeamSelector, selectedTeams, viewTeams, availableTeams, mixedCount, keyword, boundsFilter])
 
   // KakaoMap/리포트에 넘길 단일 팀값 (포커스 팀이 하나면 그 팀, 아니면 null)
   const primaryTeam = focusTeams.length === 1 ? focusTeams[0] : null
@@ -281,6 +324,8 @@ function App() {
                   counts={teamCounts}
                   availableTeams={availableTeams}
                   mixedCount={mixedCount}
+                  favoritesCount={favoriteVenues.length}
+                  onShowFavorites={handleShowFavorites}
                 />
               ) : venuesLoading ? (
                 <div className="venuesLoading">
@@ -313,6 +358,9 @@ function App() {
                   selectedTeams={viewTeams}
                   onSelect={handleVenueSelect}
                   onOpenSelector={handleShowSelector}
+                  title={favView ? '⭐ 즐겨찾기' : undefined}
+                  emptyText={favView ? '즐겨찾기한 가게가 없어요' : undefined}
+                  emptyHint={favView ? '가게 카드의 하트를 눌러 추가해보세요' : undefined}
                 />
               )}
             </div>

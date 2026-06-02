@@ -1,0 +1,28 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #c4c4c4;
+  cursor: pointer;
+  transition: transform 0.12s ease, color 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:hover {
+  color: #ff6b81;
+}
+
+.btn:active {
+  transform: scale(0.82);
+}
+
+.active {
+  color: #ff4d6d;
+}
+
+.active:hover {
+  color: #ff4d6d;
+}

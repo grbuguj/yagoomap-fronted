@@ -14,12 +14,29 @@ const TEAM_EMOJI = {
   '키움 히어로즈': '🦸',
 }
 
-function TeamSelector({ selectedTeams, onToggle, onConfirm, counts = {}, availableTeams = [], mixedCount = 0 }) {
+function TeamSelector({ selectedTeams, onToggle, onConfirm, counts = {}, availableTeams = [], mixedCount = 0, favoritesCount = 0, onShowFavorites }) {
   const mixedAvailable = mixedCount > 0
   const mixedSelected  = selectedTeams.includes(MIXED_TEAM)
 
   return (
     <div className={styles.wrap}>
+      {/* 즐겨찾기 바로가기 */}
+      <button
+        type="button"
+        className={styles.favBanner}
+        onClick={onShowFavorites}
+        disabled={favoritesCount === 0}
+      >
+        <span className={styles.favBannerIcon}>⭐</span>
+        <span className={styles.favBannerBody}>
+          <span className={styles.favBannerName}>즐겨찾기</span>
+          <span className={styles.favBannerSub}>
+            {favoritesCount > 0 ? `${favoritesCount}곳 저장됨` : '하트를 눌러 가게를 저장해보세요'}
+          </span>
+        </span>
+        {favoritesCount > 0 && <span className={styles.favBannerArrow}>›</span>}
+      </button>
+
       <p className={styles.heading}>⚾ 구단 선택</p>
 
       {/* 혼합 응원 — 상단 풀폭 배너 (모든 경기 중계 가게) */}

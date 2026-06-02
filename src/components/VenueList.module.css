@@ -67,6 +67,20 @@
 
 .itemLeft {
   flex-shrink: 0;
+  position: relative;
+}
+
+/* 썸네일 위 즐겨찾기 하트 */
+.favBtn {
+  position: absolute;
+  top: -5px;
+  left: -5px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(2px);
 }
 
 /* 썸네일 이미지 */

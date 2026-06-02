@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { TEAM_CONFIG, isMixedTeam } from '../data/teams'
+import FavoriteButton from './FavoriteButton'
 import styles from './VenueList.module.css'
 
 // venueApi.js 와 동일한 BASE_URL 전략 (운영: api 도메인, 로컬: vite 프록시)
@@ -77,16 +78,16 @@ function Stars({ rating }) {
   )
 }
 
-function VenueList({ venues, selectedTeams = [], onSelect, onOpenSelector }) {
+function VenueList({ venues, selectedTeams = [], onSelect, onOpenSelector, title, emptyText, emptyHint }) {
   // 단일 팀 선택 시 그 팀 컬러, 아니면 기본
   const singleTeam = selectedTeams.length === 1 ? TEAM_CONFIG[selectedTeams[0]] : null
   const teamColor  = singleTeam?.color || 'var(--clr-primary)'
 
-  const headerLabel = selectedTeams.length === 0
+  const headerLabel = title ?? (selectedTeams.length === 0
     ? '전체 구단'
     : selectedTeams.length === 1
       ? selectedTeams[0]
-      : `${selectedTeams.length}개 구단`
+      : `${selectedTeams.length}개 구단`)
 
   if (venues.length === 0) {
     return (
@@ -101,9 +102,9 @@ function VenueList({ venues, selectedTeams = [], onSelect, onOpenSelector }) {
           <span className={styles.headerCount}>0곳</span>
         </div>
         <div className={styles.empty}>
-          <span>⚾</span>
-          <p>검색 결과가 없어요</p>
-          <small>다른 검색어나 필터를 시도해보세요</small>
+          <span>{emptyText ? '⭐' : '⚾'}</span>
+          <p>{emptyText ?? '검색 결과가 없어요'}</p>
+          <small>{emptyHint ?? '다른 검색어나 필터를 시도해보세요'}</small>
         </div>
       </>
     )
@@ -128,6 +129,7 @@ function VenueList({ venues, selectedTeams = [], onSelect, onOpenSelector }) {
         <li key={venue.id} className={styles.item} onClick={() => onSelect(venue)}>
           <div className={styles.itemLeft}>
             <VenueThumb name={venue.name} teamColor={vTeamColor} />
+            <FavoriteButton venueId={venue.id} className={styles.favBtn} size={18} />
           </div>
           <div className={styles.itemBody}>
             <div className={styles.nameRow}>

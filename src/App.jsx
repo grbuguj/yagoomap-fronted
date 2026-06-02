@@ -1,8 +1,8 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import Header        from './components/Header'
-import SearchBar     from './components/SearchBar'
-import TeamSelector  from './components/TeamSelector'
-import VenueList     from './components/VenueList'
+import SearchBar      from './components/SearchBar'
+import TeamFilterChips from './components/TeamFilterChips'
+import VenueList      from './components/VenueList'
 import VenueDetail   from './components/VenueDetail'
 import KakaoMap      from './components/KakaoMap'
 import ReportModal   from './components/ReportModal'
@@ -15,40 +15,12 @@ import { fetchVenues } from './api/venueApi'
 import { fetchTodayGames } from './api/gamesApi'
 import { sendEvent, EVENT } from './api/events'
 import { useFavorites } from './hooks/useFavorites'
-import { TEAMS, MIXED_TEAM, isMixedTeam } from './data/teams'
+import { isMixedTeam, MIXED_EMOJI } from './data/teams'
 import './App.css'
-
-// 주어진 팀 집합 + 키워드 + 지도범위로 가게를 거른다 (목록/지도 공용)
-function selectVenues(venues, teams, availableTeams, mixedCount, keyword, boundsFilter) {
-  const mixedOn = teams.includes(MIXED_TEAM) && mixedCount > 0
-  const teamOn  = teams.some(t => availableTeams.includes(t))
-  if (!teamOn && !mixedOn) return []
-  let list = venues.filter(v => {
-    if (isMixedTeam(v.team)) return mixedOn
-    return teams.includes(v.team) && availableTeams.includes(v.team)
-  })
-  if (keyword.trim()) {
-    const kw = keyword.trim().toLowerCase()
-    list = list.filter(v =>
-      v.name.toLowerCase().includes(kw) ||
-      v.address.toLowerCase().includes(kw)
-    )
-  }
-  if (boundsFilter) {
-    list = list.filter(v =>
-      v.lat >= boundsFilter.swLat && v.lat <= boundsFilter.neLat &&
-      v.lng >= boundsFilter.swLng && v.lng <= boundsFilter.neLng
-    )
-  }
-  return list
-}
 
 function App() {
   // 초기값: 가게 데이터 로드 후 가용 팀 자동 선택 (아래 effect)
-  const [selectedTeams,    setSelectedTeams]    = useState([])  // 구단선택 화면의 체크 상태(기억됨)
-  const [viewTeams,        setViewTeams]        = useState([])  // 목록/지도에 실제로 보여줄 팀(목록보기로 진입 시)
-  const [showTeamSelector, setShowTeamSelector] = useState(true)
-  const [favView,          setFavView]          = useState(false) // 즐겨찾기만 보기
+  const [activeFilter,     setActiveFilter]     = useState('ALL') // 'ALL'|'FAV'|'MIXED'|<teamKey>
   const [keyword,          setKeyword]          = useState('')
   const [selectedVenue,    setSelectedVenue]    = useState(null)
   const [showReport,       setShowReport]       = useState(false)
@@ -70,7 +42,6 @@ function App() {
   const swipeTouchY    = useRef(0)
   const swipeScrollTop = useRef(0)
   const sidebarBodyRef = useRef(null)
-  const teamsInitedRef = useRef(false)
 
   // ── 팀별 등록 가게 수 / 가용 팀 (실제 데이터 기준) ─────────────
   const teamCounts = useMemo(() => {
@@ -78,11 +49,6 @@ function App() {
     venues.forEach(v => { m[v.team] = (m[v.team] || 0) + 1 })
     return m
   }, [venues])
-
-  const availableTeams = useMemo(
-    () => TEAMS.filter(t => (teamCounts[t.key] || 0) > 0).map(t => t.key),
-    [teamCounts]
-  )
 
   // 혼합 응원(특정 구단 전용 아님) 가게 수
   const mixedCount = useMemo(
@@ -98,53 +64,15 @@ function App() {
     [venues, favorites]
   )
 
-  // 데이터 첫 로드 시 가용 팀(+혼합) 전체 선택 (1회)
-  useEffect(() => {
-    if (!teamsInitedRef.current && (availableTeams.length > 0 || mixedCount > 0)) {
-      setSelectedTeams([...availableTeams, ...(mixedCount > 0 ? [MIXED_TEAM] : [])])
-      teamsInitedRef.current = true
-    }
-  }, [availableTeams, mixedCount])
-
-  // 목록의 포커스 팀: 구단선택 화면=체크된 팀, 목록 화면=목록보기로 들어온 팀
-  const focusTeams  = showTeamSelector ? selectedTeams : viewTeams
-
-  // ── 팀 토글 ──────────────────────────────────────────────
-  const handleTeamToggle = useCallback((teamKey) => {
-    setSelectedTeams(prev => {
-      if (prev.includes(teamKey)) return prev.filter(t => t !== teamKey)
-      return [...prev, teamKey]
-    })
-  }, [])
-
-  const handleShowSelector  = useCallback(() => {
-    setShowTeamSelector(true)
+  // ── 필터 칩 변경 (전체/찜/혼합/구단) ─────────────────────
+  const handleFilterChange = useCallback((key) => {
+    setActiveFilter(key)
     setSelectedVenue(null)
-    setFavView(false)
-  }, [])
-
-  const handleHideSelector = useCallback((teamKey) => {
-    // "목록 보기"로 특정 구단을 콕 집어 들어온 경우 → 그 구단만 표시
-    // 체크 상태(selectedTeams)는 건드리지 않고 viewTeams만 바꿔 체크를 기억
-    if (typeof teamKey === 'string') {
-      setViewTeams([teamKey])
-      sendEvent(EVENT.FILTER_TEAM, { team: teamKey })
-    }
-    setFavView(false)
-    setShowTeamSelector(false)
-    setKeyword('')
     setBoundsFilter(null)
     setMapMoved(false)
-  }, [])
-
-  // 즐겨찾기 목록으로 진입
-  const handleShowFavorites = useCallback(() => {
-    setFavView(true)
-    setShowTeamSelector(false)
-    setSelectedVenue(null)
-    setKeyword('')
-    setBoundsFilter(null)
-    setMapMoved(false)
+    if (key !== 'ALL' && key !== 'FAV' && key !== 'MIXED') {
+      sendEvent(EVENT.FILTER_TEAM, { team: key })
+    }
   }, [])
 
   // ── 가게 선택 / 닫기 ─────────────────────────────────────
@@ -195,10 +123,10 @@ function App() {
     if (dy > 60 && swipeScrollTop.current === 0) setSidebarOpen(false)
   }, [])
 
-  // 화면 전환(구단선택 ↔ 목록 ↔ 상세) 시 스크롤을 항상 맨 위로
+  // 필터/상세 전환 시 스크롤을 항상 맨 위로
   useEffect(() => {
     if (sidebarBodyRef.current) sidebarBodyRef.current.scrollTop = 0
-  }, [showTeamSelector, selectedVenue])
+  }, [activeFilter, selectedVenue])
 
   // ── 가게 목록 로드 ──────────────────────────────────────────
   useEffect(() => {
@@ -277,25 +205,34 @@ function App() {
   }, [keyword, boundsFilter])
 
   // ── 필터링 ───────────────────────────────────────────────
-  // 목록: 즐겨찾기 보기면 즐겨찾기만, 아니면 포커스 팀(목록보기로 들어온 팀)만
-  const listVenues = useMemo(
-    () => favView
-      ? filterByKwBounds(favoriteVenues)
-      : selectVenues(venues, focusTeams, availableTeams, mixedCount, keyword, boundsFilter),
-    [favView, filterByKwBounds, favoriteVenues, venues, focusTeams, availableTeams, mixedCount, keyword, boundsFilter]
-  )
+  // 활성 칩 기준 가게 모음 (전체/찜/혼합/특정 구단)
+  const baseVenues = useMemo(() => {
+    if (activeFilter === 'FAV')   return favoriteVenues
+    if (activeFilter === 'MIXED') return venues.filter(v => isMixedTeam(v.team))
+    if (activeFilter === 'ALL')   return venues
+    return venues.filter(v => v.team === activeFilter)
+  }, [activeFilter, venues, favoriteVenues])
 
-  // 지도: 즐겨찾기 보기면 즐겨찾기만, 아니면 체크된 팀 전체(+현재 보고 있는 팀)
-  const mapVenues = useMemo(() => {
-    if (favView) return filterByKwBounds(favoriteVenues)
-    const teams = showTeamSelector
-      ? selectedTeams
-      : Array.from(new Set([...selectedTeams, ...viewTeams]))
-    return selectVenues(venues, teams, availableTeams, mixedCount, keyword, boundsFilter)
-  }, [favView, filterByKwBounds, favoriteVenues, venues, showTeamSelector, selectedTeams, viewTeams, availableTeams, mixedCount, keyword, boundsFilter])
+  // 목록 = 지도 (칩 + 검색어 + 지도범위 동일 적용)
+  const listVenues = useMemo(() => filterByKwBounds(baseVenues), [filterByKwBounds, baseVenues])
+  const mapVenues  = listVenues
 
-  // KakaoMap/리포트에 넘길 단일 팀값 (포커스 팀이 하나면 그 팀, 아니면 null)
-  const primaryTeam = focusTeams.length === 1 ? focusTeams[0] : null
+  // 목록 헤더 라벨
+  const filterLabel =
+    activeFilter === 'ALL'   ? '전체'
+    : activeFilter === 'FAV'   ? '⭐ 즐겨찾기'
+    : activeFilter === 'MIXED' ? `${MIXED_EMOJI} 혼합 응원`
+    : activeFilter
+
+  // 빈 상태 아이콘/문구 (찜 / 검색중 / 일반)
+  const emptyState =
+    activeFilter === 'FAV' ? { icon: '⭐', text: '즐겨찾기한 가게가 없어요', hint: '가게 카드의 하트를 눌러 추가해보세요' }
+    : keyword.trim()       ? { icon: '🔍', text: '검색 결과가 없어요', hint: '다른 가게명이나 주소로 찾아보세요' }
+    :                        { icon: '⚾', text: '등록된 가게가 없어요', hint: '곧 추가될 예정이에요' }
+
+  // KakaoMap/리포트에 넘길 단일 팀값 (특정 구단 칩일 때만)
+  const primaryTeam = (activeFilter !== 'ALL' && activeFilter !== 'FAV' && activeFilter !== 'MIXED')
+    ? activeFilter : null
 
   return (
     <div className="app">
@@ -316,10 +253,18 @@ function App() {
           </button>
 
           <aside className="sidebar">
-            {/* 검색바: 목록 뷰에서만 */}
-            {!showTeamSelector && !selectedVenue && (
+            {/* 검색 + 구단 필터 칩 (상세 뷰만 제외) */}
+            {!selectedVenue && (
               <div className="sidebarTop">
                 <SearchBar value={keyword} onChange={setKeyword} />
+                <TeamFilterChips
+                  activeFilter={activeFilter}
+                  onChange={handleFilterChange}
+                  teamCounts={teamCounts}
+                  mixedCount={mixedCount}
+                  favoritesCount={favoriteVenues.length}
+                  totalCount={venues.length}
+                />
               </div>
             )}
 
@@ -336,18 +281,6 @@ function App() {
                   todayGame={gamesByTeam[selectedVenue.team] ?? null}
                   onClose={handleVenueClose}
                   onCloseAll={handleVenueCloseAll}
-                />
-              ) : showTeamSelector ? (
-                <TeamSelector
-                  selectedTeams={selectedTeams}
-                  onToggle={handleTeamToggle}
-                  onConfirm={handleHideSelector}
-                  counts={teamCounts}
-                  availableTeams={availableTeams}
-                  mixedCount={mixedCount}
-                  favoritesCount={favoriteVenues.length}
-                  onShowFavorites={handleShowFavorites}
-                  gamesByTeam={gamesByTeam}
                 />
               ) : venuesLoading ? (
                 <div className="venuesLoading">
@@ -377,12 +310,12 @@ function App() {
               ) : (
                 <VenueList
                   venues={listVenues}
-                  selectedTeams={viewTeams}
+                  selectedTeams={primaryTeam ? [primaryTeam] : []}
                   onSelect={handleVenueSelect}
-                  onOpenSelector={handleShowSelector}
-                  title={favView ? '⭐ 즐겨찾기' : undefined}
-                  emptyText={favView ? '즐겨찾기한 가게가 없어요' : undefined}
-                  emptyHint={favView ? '가게 카드의 하트를 눌러 추가해보세요' : undefined}
+                  title={filterLabel}
+                  emptyIcon={emptyState.icon}
+                  emptyText={emptyState.text}
+                  emptyHint={emptyState.hint}
                 />
               )}
             </div>

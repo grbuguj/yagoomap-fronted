@@ -30,6 +30,14 @@
   color: var(--clr-text);
 }
 
+/* 칩 모드(뒤로가기 없음) 헤더 라벨 */
+.headerLabel {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--clr-text);
+  padding: 4px 8px;
+}
+
 .headerCount {
   font-size: 12px;
   font-weight: 700;

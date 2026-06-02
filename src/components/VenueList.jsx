@@ -78,7 +78,7 @@ function Stars({ rating }) {
   )
 }
 
-function VenueList({ venues, selectedTeams = [], onSelect, onOpenSelector, title, emptyText, emptyHint }) {
+function VenueList({ venues, selectedTeams = [], onSelect, onOpenSelector, title, emptyText, emptyHint, emptyIcon }) {
   // 단일 팀 선택 시 그 팀 컬러, 아니면 기본
   const singleTeam = selectedTeams.length === 1 ? TEAM_CONFIG[selectedTeams[0]] : null
   const teamColor  = singleTeam?.color || 'var(--clr-primary)'
@@ -89,20 +89,27 @@ function VenueList({ venues, selectedTeams = [], onSelect, onOpenSelector, title
       ? selectedTeams[0]
       : `${selectedTeams.length}개 구단`)
 
+  // onOpenSelector 가 있으면 뒤로가기 버튼, 없으면(칩 모드) 단순 라벨
+  const headerNode = onOpenSelector ? (
+    <button className={styles.backBtn} onClick={onOpenSelector}>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      {headerLabel}
+    </button>
+  ) : (
+    <span className={styles.headerLabel}>{headerLabel}</span>
+  )
+
   if (venues.length === 0) {
     return (
       <>
         <div className={styles.listHeader}>
-          <button className={styles.backBtn} onClick={onOpenSelector}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="15 18 9 12 15 6"/>
-            </svg>
-            {headerLabel}
-          </button>
+          {headerNode}
           <span className={styles.headerCount}>0곳</span>
         </div>
         <div className={styles.empty}>
-          <span>{emptyText ? '⭐' : '⚾'}</span>
+          <span>{emptyIcon ?? (emptyText ? '⭐' : '⚾')}</span>
           <p>{emptyText ?? '검색 결과가 없어요'}</p>
           <small>{emptyHint ?? '다른 검색어나 필터를 시도해보세요'}</small>
         </div>
@@ -113,12 +120,7 @@ function VenueList({ venues, selectedTeams = [], onSelect, onOpenSelector, title
   return (
     <ul className={styles.list}>
       <li className={styles.listHeader}>
-        <button className={styles.backBtn} onClick={onOpenSelector}>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="15 18 9 12 15 6"/>
-          </svg>
-          {headerLabel}
-        </button>
+        {headerNode}
         <span className={styles.headerCount}>{venues.length}곳</span>
       </li>
 

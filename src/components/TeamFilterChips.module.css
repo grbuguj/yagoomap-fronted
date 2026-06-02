@@ -1,0 +1,56 @@
+/* ── 구단 필터 칩 한 줄 (가로 스크롤) ───────────────────────── */
+.bar {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  /* sidebarTop 좌우 패딩(16px)을 상쇄해 가장자리까지 스크롤되게 */
+  margin: 0 -16px;
+  padding: 2px 16px;
+}
+
+.bar::-webkit-scrollbar { display: none; }
+
+.chip {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 30px;
+  padding: 0 12px;
+  border-radius: 16px;
+  border: 1px solid var(--clr-border, #e5e7eb);
+  background: #fff;
+  color: var(--clr-text, #333);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s, color 0.12s;
+}
+
+.chip:hover {
+  background: var(--clr-bg, #f5f5f5);
+}
+
+/* 활성 칩: background/border-color 는 팀(또는 모드) 컬러로 인라인 지정 */
+.chipActive {
+  color: #fff;
+}
+
+.chipActive:hover {
+  filter: brightness(0.95);
+}
+
+.count {
+  font-size: 11px;
+  font-weight: 800;
+  opacity: 0.7;
+}
+
+.chipActive .count {
+  opacity: 0.92;
+}

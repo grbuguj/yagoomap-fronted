@@ -6,8 +6,9 @@
   position: absolute;
   /* NOTICE 아래 스택 — 공지 없으면 --notice-h=0 이라 헤더 바로 아래로 */
   top: calc(16px + var(--header-h) + var(--notice-h, 0px));
-  left: 0;
-  right: 0;
+  /* NOTICE 와 동일한 좌우 여백 — 한 패널처럼 정렬 */
+  left: 24px;
+  right: 24px;
   height: 36px;
   z-index: 24;                         /* NOTICE(25) 아래, 사이드바(20)·지도(1) 위 */
 
@@ -17,7 +18,10 @@
 
   /* LED 전광판 배경 */
   background: #0a0a0a;
-  border-bottom: 1px solid #1a2e00;
+  border: 1px solid #1a2e00;
+  border-top: none;                    /* NOTICE 아래 테두리를 구분선으로 공유 */
+  border-radius: 0 0 14px 14px;        /* 아래쪽 모서리만 라운드 */
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
 
   /* CRT 스캔라인 오버레이 */
   background-image: repeating-linear-gradient(
@@ -162,6 +166,8 @@
   .board {
     top: calc(10px + var(--header-h) + var(--notice-h, 0px));
     height: 30px;
+    left: 12px;
+    right: 12px;
   }
 
   .labelText { display: none; }   /* 아이콘만 */

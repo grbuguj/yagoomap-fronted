@@ -5,8 +5,9 @@
 .bar {
   position: absolute;
   top: calc(16px + var(--header-h));   /* 헤더 bottom 에 딱 붙음 */
-  left: 0;
-  right: 0;
+  /* 헤더(16px)보다 살짝 더 안쪽으로 — 가장자리에서 떨어진 플로팅 패널 */
+  left: 24px;
+  right: 24px;
   height: 36px;
   z-index: 25;                         /* 지도(1) 위, 헤더(30) 아래 */
 
@@ -16,8 +17,9 @@
 
   /* LED 전광판 배경 */
   background: #0a0a0a;
-  border-top:    1px solid #1a2e00;
-  border-bottom: 1px solid #1a2e00;
+  border: 1px solid #1a2e00;
+  border-radius: 14px 14px 0 0;        /* 위쪽 모서리만 라운드 (아래 경기바와 한 패널) */
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16);
 
   /* 미세한 CRT 스캔라인 오버레이 */
   background-image: repeating-linear-gradient(
@@ -156,6 +158,8 @@
   .bar {
     top: calc(10px + var(--header-h));
     height: 30px;
+    left: 12px;
+    right: 12px;
   }
 
   .text {

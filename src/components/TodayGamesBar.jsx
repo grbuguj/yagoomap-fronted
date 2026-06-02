@@ -74,11 +74,13 @@ function TodayGamesBar({ games = [] }) {
         <span className={styles.labelText}>TODAY</span>
       </div>
 
-      {/* 경기 칸 (가로 스크롤) */}
+      {/* 경기 칸 — PC 중앙 정렬 / 모바일 폭 꽉 채움 (넘치면 가로 스크롤) */}
       <div className={styles.cells}>
-        {games.map(g => (
-          <GameCell key={g.gameId} game={g} />
-        ))}
+        <div className={styles.cellsInner}>
+          {games.map(g => (
+            <GameCell key={g.gameId} game={g} />
+          ))}
+        </div>
       </div>
     </div>
   )

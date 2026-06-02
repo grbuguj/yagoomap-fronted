@@ -91,8 +91,56 @@ function Lightbox({ images, index, onClose, onPrev, onNext }) {
   )
 }
 
+// "2026-06-02T18:30:00" → "18:30"
+function gameTime(iso) {
+  if (!iso) return ''
+  const m = iso.match(/T(\d{2}):(\d{2})/)
+  return m ? `${m[1]}:${m[2]}` : ''
+}
+
+/* ── 오늘 경기 배너 ─────────────────────────────────────── */
+function TodayGameBanner({ game, teamKey, color }) {
+  if (!game) return null
+
+  const oppKey   = game.homeTeam === teamKey ? game.awayTeam : game.homeTeam
+  const oppShort = TEAM_CONFIG[oppKey]?.shortName || oppKey
+  const isHome   = game.homeTeam === teamKey
+  const live     = game.status === 'LIVE'
+  const finished = game.status === 'FINISHED'
+  const canceled = game.status === 'CANCELED'
+  const myScore  = isHome ? game.homeScore : game.awayScore
+  const oppScore = isHome ? game.awayScore : game.homeScore
+  const hasScore = (live || finished) && myScore != null && oppScore != null
+
+  let title
+  let sub
+  if (canceled) {
+    title = `오늘 경기 취소 · vs ${oppShort}`
+    sub   = game.stadium ? `@${game.stadium}` : ''
+  } else if (live) {
+    title = `🔴 경기중 ${hasScore ? `${myScore} : ${oppScore}` : ''} vs ${oppShort}`
+    sub   = game.statusInfo || '실시간'
+  } else if (finished) {
+    title = `오늘 경기 종료 ${hasScore ? `${myScore} : ${oppScore}` : ''} vs ${oppShort}`
+    sub   = `${isHome ? '홈' : '원정'}${game.stadium ? ` · ${game.stadium}` : ''}`
+  } else {
+    title = `오늘 ${gameTime(game.startTime)} vs ${oppShort}`
+    sub   = `${isHome ? '홈경기' : '원정'}${game.stadium ? ` @${game.stadium}` : ''} · 여기서 중계 보며 응원 어때요?`
+  }
+
+  return (
+    <div className={styles.gameBanner} style={{ borderColor: color, background: color + '0d' }}>
+      <span className={styles.gameBannerIcon} style={{ color }}>⚾</span>
+      <div className={styles.gameBannerBody}>
+        <span className={styles.gameBannerTitle}>{title}</span>
+        {sub && <span className={styles.gameBannerSub}>{sub}</span>}
+      </div>
+    </div>
+  )
+}
+
 /* ── VenueDetail ────────────────────────────────────────── */
-function VenueDetail({ venue, onClose, onCloseAll }) {
+function VenueDetail({ venue, todayGame, onClose, onCloseAll }) {
   const [reviewCount,  setReviewCount]  = useState(venue?.reviewCount ?? 0)
   const [venueImgs,    setVenueImgs]    = useState([])
   const [imgLoading,   setImgLoading]   = useState(true)
@@ -234,6 +282,9 @@ function VenueDetail({ venue, onClose, onCloseAll }) {
             </span>
           </div>
         </div>
+
+        {/* 오늘 경기 (응원 구단 전용) */}
+        <TodayGameBanner game={todayGame} teamKey={venue.team} color={teamColor} />
 
         {/* 2. 태그 칩 */}
         {venue.tags?.length > 0 && (

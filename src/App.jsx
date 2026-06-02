@@ -10,7 +10,9 @@ import SidebarFooter from './components/SidebarFooter'
 import PolicyModal   from './components/PolicyModal'
 import WelcomeModal, { shouldShowWelcome } from './components/WelcomeModal'
 import NoticeBar from './components/NoticeBar'
+import TodayGamesBar from './components/TodayGamesBar'
 import { fetchVenues } from './api/venueApi'
+import { fetchTodayGames } from './api/gamesApi'
 import { sendEvent, EVENT } from './api/events'
 import { useFavorites } from './hooks/useFavorites'
 import { TEAMS, MIXED_TEAM, isMixedTeam } from './data/teams'
@@ -58,6 +60,7 @@ function App() {
   const [venues,        setVenues]        = useState([])
   const [venuesLoading, setVenuesLoading] = useState(true)
   const [venuesError,   setVenuesError]   = useState(null)
+  const [todayGames,    setTodayGames]    = useState([])
   const [userLocation,     setUserLocation]     = useState(null)
   const [locating,         setLocating]         = useState(false)
   const [mapMoved,         setMapMoved]         = useState(false)
@@ -204,6 +207,21 @@ function App() {
       .catch(err  => { console.error(err); setVenuesError(err.message); setVenuesLoading(false) })
   }, [])
 
+  // ── 오늘의 KBO 경기 로드 (실패해도 앱 동작엔 영향 없음) ──────
+  useEffect(() => {
+    fetchTodayGames().then(setTodayGames).catch(() => {})
+  }, [])
+
+  // 팀별 오늘 경기 (한 팀은 하루 최대 1경기) — 카드 뱃지/가게 상세 연동용
+  const gamesByTeam = useMemo(() => {
+    const m = {}
+    todayGames.forEach(g => {
+      if (g.homeTeam) m[g.homeTeam] = g
+      if (g.awayTeam) m[g.awayTeam] = g
+    })
+    return m
+  }, [todayGames])
+
   // ── 분석 이벤트: 페이지 진입 1회 ─────────────────────────────
   useEffect(() => {
     sendEvent(EVENT.PAGE_VIEW)
@@ -296,6 +314,9 @@ function App() {
           </button>
 
           <aside className="sidebar">
+            {/* 오늘의 경기 바: 상세 화면 제외하고 상단 노출 */}
+            {!selectedVenue && <TodayGamesBar games={todayGames} />}
+
             {/* 검색바: 목록 뷰에서만 */}
             {!showTeamSelector && !selectedVenue && (
               <div className="sidebarTop">
@@ -313,6 +334,7 @@ function App() {
                 <VenueDetail
                   key={selectedVenue.id}
                   venue={selectedVenue}
+                  todayGame={gamesByTeam[selectedVenue.team] ?? null}
                   onClose={handleVenueClose}
                   onCloseAll={handleVenueCloseAll}
                 />
@@ -326,6 +348,7 @@ function App() {
                   mixedCount={mixedCount}
                   favoritesCount={favoriteVenues.length}
                   onShowFavorites={handleShowFavorites}
+                  gamesByTeam={gamesByTeam}
                 />
               ) : venuesLoading ? (
                 <div className="venuesLoading">

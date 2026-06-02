@@ -183,6 +183,47 @@
   cursor: default;
 }
 
+/* 오늘 경기 뱃지 (카드 좌상단) */
+.gamePill {
+  position: absolute;
+  top: 9px;
+  left: 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #475569;
+  background: #eef2f7;
+  border: 1px solid #e2e8f0;
+  letter-spacing: 0.2px;
+}
+
+.gamePillLive {
+  color: #fff;
+  background: #ef4444;
+  border-color: #ef4444;
+}
+
+.gamePillCanceled {
+  color: #94a3b8;
+}
+
+.gamePillDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #fff;
+  animation: gamePillPulse 1.2s ease-in-out infinite;
+}
+
+@keyframes gamePillPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.35; }
+}
+
 /* 체크 뱃지 */
 .check {
   position: absolute;

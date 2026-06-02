@@ -1,5 +1,37 @@
-import { TEAMS, MIXED_TEAM, MIXED_COLOR, MIXED_EMOJI } from '../data/teams'
+import { TEAMS, TEAM_CONFIG, MIXED_TEAM, MIXED_COLOR, MIXED_EMOJI } from '../data/teams'
 import styles from './TeamSelector.module.css'
+
+// "2026-06-02T18:30:00" → "18:30"
+function gameTime(iso) {
+  if (!iso) return ''
+  const m = iso.match(/T(\d{2}):(\d{2})/)
+  return m ? `${m[1]}:${m[2]}` : ''
+}
+
+// 팀 카드용 오늘 경기 뱃지 (코너 핀)
+function GamePill({ game, teamKey }) {
+  const oppKey   = game.homeTeam === teamKey ? game.awayTeam : game.homeTeam
+  const oppShort = TEAM_CONFIG[oppKey]?.shortName || oppKey
+  const live     = game.status === 'LIVE'
+  const finished = game.status === 'FINISHED'
+  const canceled = game.status === 'CANCELED'
+
+  let text
+  if (canceled)      text = '취소'
+  else if (live)     text = 'LIVE'
+  else if (finished) text = '종료'
+  else               text = gameTime(game.startTime)
+
+  return (
+    <span
+      className={`${styles.gamePill} ${live ? styles.gamePillLive : ''} ${canceled ? styles.gamePillCanceled : ''}`}
+      title={`오늘 vs ${oppShort}`}
+    >
+      {live && <span className={styles.gamePillDot} />}
+      {text}
+    </span>
+  )
+}
 
 const TEAM_EMOJI = {
   'LG 트윈스':    '⚡',
@@ -14,7 +46,7 @@ const TEAM_EMOJI = {
   '키움 히어로즈': '🦸',
 }
 
-function TeamSelector({ selectedTeams, onToggle, onConfirm, counts = {}, availableTeams = [], mixedCount = 0, favoritesCount = 0, onShowFavorites }) {
+function TeamSelector({ selectedTeams, onToggle, onConfirm, counts = {}, availableTeams = [], mixedCount = 0, favoritesCount = 0, onShowFavorites, gamesByTeam = {} }) {
   const mixedAvailable = mixedCount > 0
   const mixedSelected  = selectedTeams.includes(MIXED_TEAM)
 
@@ -68,6 +100,7 @@ function TeamSelector({ selectedTeams, onToggle, onConfirm, counts = {}, availab
           const available = availableTeams.includes(team.key)
           const count     = counts[team.key] || 0
           const selected  = selectedTeams.includes(team.key)
+          const game      = gamesByTeam[team.key]
 
           return (
             <button
@@ -77,6 +110,7 @@ function TeamSelector({ selectedTeams, onToggle, onConfirm, counts = {}, availab
               disabled={!available}
               style={selected ? { borderColor: team.color, background: team.color + '0d' } : {}}
             >
+              {game && <GamePill game={game} teamKey={team.key} />}
               {selected && (
                 <span className={styles.check} style={{ background: team.color }}>✓</span>
               )}

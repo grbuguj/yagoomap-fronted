@@ -89,17 +89,18 @@ function ApproveModal({ title, initial, teams, withNoteTags, onConfirm, onClose 
   const [form, setForm] = useState(initial)
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
-  // 드롭다운에 없는 사전선택 구단(예: 제보의 teamId)도 잃지 않도록 옵션에 합류
+  // 드롭다운에 없는 사전선택 구단(예: 제보의 팀명)도 잃지 않도록 옵션에 합류
   const teamOptions = useMemo(() => {
-    if (form.teamId != null && !teams.some(t => t.teamId === form.teamId)) {
-      return [{ teamId: form.teamId, team: form.team || `구단 #${form.teamId}` }, ...teams]
+    if (form.team && !teams.some(t => t.team === form.team)) {
+      return [{ teamId: form.teamId ?? 0, team: form.team }, ...teams]
     }
     return teams
-  }, [teams, form.teamId, form.team])
+  }, [teams, form.team, form.teamId])
 
   const handleTeam = (e) => {
-    const found = teamOptions.find(t => t.teamId === Number(e.target.value))
-    setForm(f => ({ ...f, teamId: found?.teamId ?? null, team: found?.team ?? '' }))
+    // teamId 가 없는 구단(LG·한화·롯데 외)도 선택되도록 팀명 문자열로 매칭
+    const found = teamOptions.find(t => t.team === e.target.value)
+    setForm(f => ({ ...f, team: found?.team ?? '', teamId: found?.teamId ?? 0 }))
   }
 
   const handleSubmit = (e) => {
@@ -109,7 +110,7 @@ function ApproveModal({ title, initial, teams, withNoteTags, onConfirm, onClose 
       address: form.address,
       latitude: form.latitude === '' ? null : Number(form.latitude),
       longitude: form.longitude === '' ? null : Number(form.longitude),
-      teamId: form.teamId,
+      teamId: form.teamId ?? 0,
       team: form.team,
     }
     if (withNoteTags) {
@@ -143,9 +144,9 @@ function ApproveModal({ title, initial, teams, withNoteTags, onConfirm, onClose 
             </div>
             <div className={styles.formGroupFull}>
               <label className={styles.label}>구단 *</label>
-              <select className={styles.select} value={form.teamId ?? ''} onChange={handleTeam} required>
+              <select className={styles.select} value={form.team ?? ''} onChange={handleTeam} required>
                 <option value="" disabled>구단 선택</option>
-                {teamOptions.map(t => <option key={t.teamId} value={t.teamId}>{t.team}</option>)}
+                {teamOptions.map(t => <option key={t.team} value={t.team}>{t.team}</option>)}
               </select>
             </div>
             {withNoteTags && (
@@ -178,7 +179,7 @@ function emptyPlaceForm(teams) {
   const first = teams[0] ?? { teamId: null, team: '' }
   return {
     name: '', address: '', latitude: '', longitude: '',
-    teamId: first.teamId, team: first.team,
+    teamId: first.teamId ?? 0, team: first.team,
     category: '술집', phone: '', instagramUrl: '',
     naverMapUrl: '', note: '', tags: '', status: 'ACTIVE',
   }
@@ -190,17 +191,18 @@ function PlaceModal({ initial, teams, onClose, onSubmit }) {
 
   const set = (key, val) => setForm(f => ({ ...f, [key]: val }))
 
-  // 수정 대상의 구단이 드롭다운(현재 LG만)에 없어도 유지
+  // 수정 대상의 구단이 드롭다운(활성 장소 기준 목록)에 없어도 유지
   const teamOptions = useMemo(() => {
-    if (form.teamId != null && !teams.some(t => t.teamId === form.teamId)) {
-      return [{ teamId: form.teamId, team: form.team || `구단 #${form.teamId}` }, ...teams]
+    if (form.team && !teams.some(t => t.team === form.team)) {
+      return [{ teamId: form.teamId ?? 0, team: form.team }, ...teams]
     }
     return teams
-  }, [teams, form.teamId, form.team])
+  }, [teams, form.team, form.teamId])
 
   const handleTeam = (e) => {
-    const found = teamOptions.find(t => t.teamId === Number(e.target.value))
-    setForm(f => ({ ...f, teamId: found?.teamId ?? null, team: found?.team ?? '' }))
+    // teamId 가 없는 구단(LG·한화·롯데 외)도 선택되도록 팀명 문자열로 매칭
+    const found = teamOptions.find(t => t.team === e.target.value)
+    setForm(f => ({ ...f, team: found?.team ?? '', teamId: found?.teamId ?? 0 }))
   }
 
   // 빈 값/NaN 은 payload 에서 제외 → 수정 시 좌표 등을 null 로 덮어쓰지 않음
@@ -215,6 +217,7 @@ function PlaceModal({ initial, teams, onClose, onSubmit }) {
     e.preventDefault()
     onSubmit({
       ...form,
+      teamId: form.teamId ?? 0,
       latitude: num(form.latitude),
       longitude: num(form.longitude),
       tags: (typeof form.tags === 'string' ? form.tags : '').split(',').map(t => t.trim()).filter(Boolean),
@@ -249,9 +252,9 @@ function PlaceModal({ initial, teams, onClose, onSubmit }) {
 
             <div className={styles.formGroup}>
               <label className={styles.label}>구단 *</label>
-              <select className={styles.select} value={form.teamId ?? ''} onChange={handleTeam} required>
+              <select className={styles.select} value={form.team ?? ''} onChange={handleTeam} required>
                 <option value="" disabled>구단 선택</option>
-                {teamOptions.map(t => <option key={t.teamId} value={t.teamId}>{t.team}</option>)}
+                {teamOptions.map(t => <option key={t.team} value={t.team}>{t.team}</option>)}
               </select>
             </div>
 

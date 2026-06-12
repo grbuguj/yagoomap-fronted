@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { TEAM_CONFIG, MIXED_COLOR } from '../data/teams'
 import { INCHEON_PARKING } from '../data/incheonParking'
+import { STADIUMS } from '../data/stadiums'
 import styles from './KakaoMap.module.css'
 
 // 레이블에 표시할 가게 이름 (너무 길면 자름)
@@ -36,6 +37,7 @@ function KakaoMap({ venues, selectedTeam, selectedVenue, onVenueClick, userLocat
   const incheonPopupRef     = useRef(null) // 주차장 정보 팝업
   const myLocOverlay        = useRef(null)
   const onBoundsChangeCb    = useRef(onBoundsChange)
+  const [zoomLevel, setZoomLevel] = useState(9) // 축소 레벨별 마커/클러스터 전환용
 
   // 콜백 ref 최신 상태 유지 (클로저 stale 방지)
   useEffect(() => { onBoundsChangeCb.current = onBoundsChange }, [onBoundsChange])
@@ -64,9 +66,36 @@ function KakaoMap({ venues, selectedTeam, selectedVenue, onVenueClick, userLocat
     }
     window.kakao.maps.event.addListener(map, 'dragend',      emitBounds)
     window.kakao.maps.event.addListener(map, 'zoom_changed', emitBounds)
+
+    // 줌 레벨 추적 (레벨별 마커/클러스터 전환)
+    setZoomLevel(map.getLevel())
+    window.kakao.maps.event.addListener(map, 'zoom_changed', () => setZoomLevel(map.getLevel()))
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  /* ── 마커 전체 재생성 (venues 목록 변경 시만) ────────────── */
+  /* ── KBO 구장 마커 (상시 표시 랜드마크) ─────────────────── */
+  useEffect(() => {
+    const map = mapInstance.current
+    if (!map) return
+    const overlays = STADIUMS.map(s => {
+      const el = document.createElement('div')
+      el.className = 'ymap-stadium'
+      el.style.setProperty('--stadium-color', s.color)
+      el.title = `${s.name} — ${s.teams}`
+      el.innerHTML = `<span class="ymap-stadium-ball">⚾</span><span class="ymap-stadium-name">${s.name}</span>`
+      return new window.kakao.maps.CustomOverlay({
+        map,
+        position: new window.kakao.maps.LatLng(s.lat, s.lng),
+        content: el,
+        yAnchor: 0.5,
+        xAnchor: 0.5,
+        zIndex: 0,
+      })
+    })
+    return () => overlays.forEach(o => o.setMap(null))
+  }, [])
+
+  /* ── 마커 재생성 (venues 변경 또는 줌 레벨 전환 시) ──────── */
+  // 레벨 7 미만(확대): 개별 마커 / 레벨 7 이상(축소): 그리드 클러스터 버블
   useEffect(() => {
     const map = mapInstance.current
     if (!map) return
@@ -75,10 +104,9 @@ function KakaoMap({ venues, selectedTeam, selectedVenue, onVenueClick, userLocat
     overlaysRef.current.forEach(({ overlay }) => overlay.setMap(null))
     overlaysRef.current = []
 
-    venues.forEach(venue => {
+    const addVenueMarker = venue => {
       const content = createMarkerContent(venue)
       content.addEventListener('click', () => onVenueClick(venue))
-
       const overlay = new window.kakao.maps.CustomOverlay({
         map,
         position: new window.kakao.maps.LatLng(venue.lat, venue.lng),
@@ -86,10 +114,50 @@ function KakaoMap({ venues, selectedTeam, selectedVenue, onVenueClick, userLocat
         yAnchor: 1.4,
         zIndex: 1,
       })
-
       overlaysRef.current.push({ overlay, content, venueId: venue.id })
+    }
+
+    const CLUSTER_LEVEL = 7
+    if (zoomLevel < CLUSTER_LEVEL) {
+      venues.forEach(addVenueMarker)
+      return
+    }
+
+    // ── 그리드 클러스터링 (줌 레벨에 비례해 셀 크기 확대) ──
+    const cell = 0.03 * Math.pow(2, zoomLevel - CLUSTER_LEVEL)
+    const buckets = new Map()
+    venues.forEach(v => {
+      const key = `${Math.round(v.lat / cell)}:${Math.round(v.lng / cell)}`
+      if (!buckets.has(key)) buckets.set(key, [])
+      buckets.get(key).push(v)
     })
-  }, [venues, onVenueClick])
+
+    buckets.forEach(group => {
+      if (group.length === 1) { addVenueMarker(group[0]); return }
+
+      const lat = group.reduce((s, v) => s + v.lat, 0) / group.length
+      const lng = group.reduce((s, v) => s + v.lng, 0) / group.length
+      const el = document.createElement('div')
+      const size = group.length >= 30 ? 'lg' : group.length >= 10 ? 'md' : 'sm'
+      el.className = `ymap-cluster ymap-cluster--${size}`
+      el.textContent = group.length.toLocaleString()
+      el.title = `이 지역 매장 ${group.length}곳 — 클릭하면 확대`
+      el.addEventListener('click', () => {
+        map.setLevel(Math.max(1, map.getLevel() - 2), {
+          anchor: new window.kakao.maps.LatLng(lat, lng),
+        })
+      })
+      const overlay = new window.kakao.maps.CustomOverlay({
+        map,
+        position: new window.kakao.maps.LatLng(lat, lng),
+        content: el,
+        yAnchor: 0.5,
+        xAnchor: 0.5,
+        zIndex: 2,
+      })
+      overlaysRef.current.push({ overlay, content: el, venueId: null })
+    })
+  }, [venues, onVenueClick, zoomLevel])
 
   /* ── 인천 공공데이터 레이어 (공영주차장) ────────────────── */
   // 역 마커는 카카오 기본지도에 이미 표시되므로 별도로 그리지 않음.

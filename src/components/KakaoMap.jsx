@@ -73,12 +73,14 @@ function KakaoMap({ venues, selectedTeam, selectedVenue, onVenueClick, userLocat
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ── KBO 구장 마커 (상시 표시 랜드마크) ─────────────────── */
+  // 축소 뷰(클러스터 모드)에선 ⚾ 컴팩트 배지로 줄여 버블과의 겹침 최소화
+  const stadiumCompact = zoomLevel >= 7
   useEffect(() => {
     const map = mapInstance.current
     if (!map) return
     const overlays = STADIUMS.map(s => {
       const el = document.createElement('div')
-      el.className = 'ymap-stadium'
+      el.className = `ymap-stadium${stadiumCompact ? ' ymap-stadium--compact' : ''}`
       el.style.setProperty('--stadium-color', s.color)
       el.title = `${s.name} — ${s.teams}`
       el.innerHTML = `<span class="ymap-stadium-ball">⚾</span><span class="ymap-stadium-name">${s.name}</span><i class="ymap-stadium-tail"></i>`
@@ -92,7 +94,7 @@ function KakaoMap({ venues, selectedTeam, selectedVenue, onVenueClick, userLocat
       })
     })
     return () => overlays.forEach(o => o.setMap(null))
-  }, [])
+  }, [stadiumCompact])
 
   /* ── 마커 재생성 (venues 변경 또는 줌 레벨 전환 시) ──────── */
   // 레벨 7 미만(확대): 개별 마커 / 레벨 7 이상(축소): 그리드 클러스터 버블

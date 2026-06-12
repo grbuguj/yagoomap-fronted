@@ -126,7 +126,7 @@ function KakaoMap({ venues, selectedTeam, selectedVenue, onVenueClick, userLocat
     }
 
     // ── 그리드 클러스터링 (줌 레벨에 비례해 셀 크기 확대) ──
-    const cell = 0.03 * Math.pow(2, zoomLevel - CLUSTER_LEVEL)
+    const cell = 0.06 * Math.pow(2, zoomLevel - CLUSTER_LEVEL)
     const buckets = new Map()
     venues.forEach(v => {
       const key = `${Math.round(v.lat / cell)}:${Math.round(v.lng / cell)}`
@@ -139,7 +139,7 @@ function KakaoMap({ venues, selectedTeam, selectedVenue, onVenueClick, userLocat
       const lat = group.reduce((s, v) => s + v.lat, 0) / group.length
       const lng = group.reduce((s, v) => s + v.lng, 0) / group.length
       const el = document.createElement('div')
-      const size = group.length >= 30 ? 'lg' : group.length >= 10 ? 'md' : 'sm'
+      const size = group.length >= 20 ? 'lg' : 'sm'
       el.className = `ymap-cluster ymap-cluster--${size}`
       el.textContent = group.length.toLocaleString()
       el.title = `이 지역 매장 ${group.length}곳 — 클릭하면 확대`

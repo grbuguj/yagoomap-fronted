@@ -267,9 +267,8 @@ input, textarea {
     0 4px 14px rgba(0, 0, 0, 0.22);
 }
 
-.ymap-cluster--sm { width: 32px; height: 32px; font-size: 12px; }
-.ymap-cluster--md { width: 42px; height: 42px; font-size: 13.5px; }
-.ymap-cluster--lg { width: 54px; height: 54px; font-size: 15.5px; }
+.ymap-cluster--sm { width: 44px; height: 44px; font-size: 14.5px; }
+.ymap-cluster--lg { width: 62px; height: 62px; font-size: 18px; }
 
 /* 축소 뷰: 구장 컴팩트 배지 (⚾만, 이름 숨김) */
 .ymap-stadium--compact {

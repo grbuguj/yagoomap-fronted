@@ -1,12 +1,12 @@
 .box {
   margin: 10px 0 2px;
-  padding: 10px 12px;
+  padding: 11px 12px;
   border: 1px solid var(--clr-border, #e5e7eb);
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--clr-bg-soft, #fafafa);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 9px;
 }
 
 .head {
@@ -25,31 +25,122 @@
   color: var(--clr-text-sub, #9ca3af);
 }
 
+/* ── 행: 아이콘 + 본문 ── */
 .row {
   display: flex;
   align-items: flex-start;
-  gap: 6px;
+  gap: 8px;
 }
 
-.icon {
-  font-size: 12px;
-  line-height: 1.5;
-}
-
-.text {
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--clr-text, #374151);
-}
-
-.text b {
-  font-weight: 600;
-}
-
-.coach {
-  margin-top: 4px;
-  padding: 8px 10px;
+.rowIcon {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 8px;
+  background: #fff;
+  border: 1px solid var(--clr-border, #e9eaee);
+  font-size: 13px;
+}
+
+.rowBody {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.rowMain {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.rowName {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--clr-text, #1f2937);
+}
+
+.rowMeta {
+  margin-left: auto;
+  font-size: 11px;
+  color: var(--clr-text-sub, #6b7280);
+  white-space: nowrap;
+}
+
+.rowSub {
+  font-size: 11px;
+  color: var(--clr-text-sub, #8b919c);
+}
+
+/* ── 실시간 배지 ── */
+.live {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #1d9e55;
+  letter-spacing: -0.2px;
+  animation: livePulse 1.6s ease-in-out infinite;
+}
+
+@keyframes livePulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+
+/* ── 버스 도착 칩 ── */
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1px solid var(--clr-border, #e3e5ea);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.pill > b {
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.pillTime {
+  font-weight: 700;
+  color: #374151;
+}
+
+.pillStops {
+  font-size: 9.5px;
+  color: #9ca3af;
+}
+
+/* 3분 이내 임박: 강조 */
+.pillSoon {
+  border-color: #f3b9ae;
+  background: #fff5f3;
+}
+
+.pillSoon .pillTime {
+  color: #e5462e;
+}
+
+/* ── AI 직관 도우미 ── */
+.coach {
+  margin-top: 1px;
+  padding: 9px 11px;
+  border-radius: 10px;
   background: linear-gradient(135deg, #eef4ff, #f5f0ff);
   display: flex;
   flex-direction: column;
@@ -65,18 +156,6 @@
 .coachTip {
   margin: 0;
   font-size: 12px;
-  line-height: 1.5;
+  line-height: 1.55;
   color: #374151;
-}
-
-.live {
-  display: inline-block;
-  margin-left: 4px;
-  padding: 0 5px;
-  border-radius: 6px;
-  background: #e8f7ee;
-  color: #1d9e55;
-  font-size: 10px;
-  font-weight: 700;
-  vertical-align: 1px;
 }

@@ -70,36 +70,56 @@ export default function IncheonTransit({ venue, game }) {
 
       {station && (
         <div className={styles.row}>
-          <span className={styles.icon}>🚉</span>
-          <span className={styles.text}>
-            <b>{station.name}역</b> ({station.line}
-            {station.transfer ? ` · ${station.transfer} 환승` : ''})
-            {' '}— 도보 약 {walkMin(station.dist)}분 ({station.dist.toLocaleString()}m)
-          </span>
+          <span className={styles.rowIcon}>🚉</span>
+          <div className={styles.rowBody}>
+            <div className={styles.rowMain}>
+              <b className={styles.rowName}>{station.name}역</b>
+              <span className={styles.rowMeta}>도보 {walkMin(station.dist)}분 · {station.dist.toLocaleString()}m</span>
+            </div>
+            <div className={styles.rowSub}>
+              {station.line}{station.transfer ? ` · ${station.transfer} 환승` : ''}
+            </div>
+          </div>
         </div>
       )}
 
       {parking && parking.dist <= 1200 && (
         <div className={styles.row}>
-          <span className={styles.icon}>🅿️</span>
-          <span className={styles.text}>
-            <b>{parking.name}</b> — {parking.dist.toLocaleString()}m
-            {parking.fee ? ` · ${parking.fee}` : ''}
-            {parking.capacity ? ` · ${parking.capacity.toLocaleString()}면` : ''}
-          </span>
+          <span className={styles.rowIcon}>🅿️</span>
+          <div className={styles.rowBody}>
+            <div className={styles.rowMain}>
+              <b className={styles.rowName}>{parking.name}</b>
+              <span className={styles.rowMeta}>{parking.dist.toLocaleString()}m</span>
+            </div>
+            <div className={styles.rowSub}>
+              {[parking.fee, parking.capacity ? `${parking.capacity.toLocaleString()}면` : null]
+                .filter(Boolean).join(' · ')}
+            </div>
+          </div>
         </div>
       )}
 
       {busStop && arrivals.length > 0 && (
         <div className={styles.row}>
-          <span className={styles.icon}>🚌</span>
-          <span className={styles.text}>
-            <b>{busStop.name}</b> ({busStop.dist}m) —{' '}
-            {arrivals.map(b =>
-              `${b.route ? `${b.route}번 ` : '버스 '}${b.minutes}분${b.stopsAway != null ? ` (${b.stopsAway}정거장 전)` : ''}`
-            ).join(' · ')}
-            <span className={styles.live}> 실시간</span>
-          </span>
+          <span className={styles.rowIcon}>🚌</span>
+          <div className={styles.rowBody}>
+            <div className={styles.rowMain}>
+              <b className={styles.rowName}>{busStop.name}</b>
+              <span className={styles.live}>● 실시간</span>
+              <span className={styles.rowMeta}>{busStop.dist}m</span>
+            </div>
+            <div className={styles.pills}>
+              {arrivals.map((b, i) => (
+                <span key={i} className={`${styles.pill} ${b.minutes <= 3 ? styles.pillSoon : ''}`}>
+                  <b>{b.route ? `${b.route}번` : '버스'}</b>
+                  <span className={styles.pillTime}>{b.minutes <= 1 ? '곧 도착' : `${b.minutes}분`}</span>
+                  {b.stopsAway != null && b.stopsAway > 0 && (
+                    <span className={styles.pillStops}>{b.stopsAway}정거장</span>
+                  )}
+                </span>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 

@@ -1,6 +1,5 @@
 import { useEffect, useRef } from 'react'
 import { TEAM_CONFIG, MIXED_COLOR } from '../data/teams'
-import { INCHEON_STATIONS } from '../data/incheonStations'
 import { INCHEON_PARKING } from '../data/incheonParking'
 import styles from './KakaoMap.module.css'
 
@@ -33,7 +32,8 @@ function KakaoMap({ venues, selectedTeam, selectedVenue, onVenueClick, userLocat
   const mapRef              = useRef(null)
   const mapInstance         = useRef(null)
   const overlaysRef         = useRef([])  // [{ overlay, content, venueId }]
-  const incheonOverlaysRef  = useRef([])  // 인천 공공데이터 레이어 (역/주차장)
+  const incheonOverlaysRef  = useRef([])  // 인천 공공데이터 레이어 (주차장)
+  const incheonPopupRef     = useRef(null) // 주차장 정보 팝업
   const myLocOverlay        = useRef(null)
   const onBoundsChangeCb    = useRef(onBoundsChange)
 
@@ -91,38 +91,70 @@ function KakaoMap({ venues, selectedTeam, selectedVenue, onVenueClick, userLocat
     })
   }, [venues, onVenueClick])
 
-  /* ── 인천 공공데이터 레이어 (도시철도역 + 공영주차장) ───── */
+  /* ── 인천 공공데이터 레이어 (공영주차장) ────────────────── */
+  // 역 마커는 카카오 기본지도에 이미 표시되므로 별도로 그리지 않음.
   useEffect(() => {
     const map = mapInstance.current
     if (!map) return
 
-    // 기존 레이어 제거
+    // 기존 레이어 + 팝업 제거
     incheonOverlaysRef.current.forEach(o => o.setMap(null))
     incheonOverlaysRef.current = []
+    if (incheonPopupRef.current) {
+      incheonPopupRef.current.setMap(null)
+      incheonPopupRef.current = null
+    }
     if (!showIncheonLayer) return
 
-    const make = (lat, lng, cls, emoji, title) => {
+    const closePopup = () => {
+      if (incheonPopupRef.current) {
+        incheonPopupRef.current.setMap(null)
+        incheonPopupRef.current = null
+      }
+    }
+
+    const openPopup = (p) => {
+      closePopup()
       const el = document.createElement('div')
-      el.className = `ymap-incheon ${cls}`
-      el.title = title
-      el.textContent = emoji
+      el.className = 'ymap-incheon-popup'
+      const feeLine = [
+        p.fee,
+        p.baseFee != null && p.baseMin != null ? `기본 ${p.baseMin}분 ${p.baseFee.toLocaleString()}원` : null,
+      ].filter(Boolean).join(' · ')
+      el.innerHTML = `
+        <div class="ymap-incheon-popup-title">🅿️ ${p.name}</div>
+        ${p.capacity ? `<div>주차면 ${p.capacity.toLocaleString()}면</div>` : ''}
+        ${feeLine ? `<div>${feeLine}</div>` : ''}
+        ${p.hours ? `<div>평일 ${p.hours}</div>` : ''}
+        <div class="ymap-incheon-popup-src">인천시 공공데이터</div>
+      `
+      el.addEventListener('click', closePopup)
+      incheonPopupRef.current = new window.kakao.maps.CustomOverlay({
+        map,
+        position: new window.kakao.maps.LatLng(p.lat, p.lng),
+        content: el,
+        yAnchor: 1.25,
+        zIndex: 20,
+      })
+    }
+
+    // 주차장 1,004개 전부 그리면 무거움 → 50면 이상(약 300개)만 마커 표시.
+    // (매장 상세 "가는 길"의 최근접 계산은 전체 1,004개 기준 — 여긴 지도 표시용 필터)
+    INCHEON_PARKING.filter(p => (p.capacity ?? 0) >= 50).forEach(p => {
+      const el = document.createElement('div')
+      el.className = 'ymap-incheon ymap-incheon--parking'
+      el.textContent = '🅿️'
+      el.addEventListener('click', () => openPopup(p))
       const overlay = new window.kakao.maps.CustomOverlay({
         map,
-        position: new window.kakao.maps.LatLng(lat, lng),
+        position: new window.kakao.maps.LatLng(p.lat, p.lng),
         content: el,
         yAnchor: 0.5,
         xAnchor: 0.5,
         zIndex: 2,
       })
       incheonOverlaysRef.current.push(overlay)
-    }
-
-    INCHEON_STATIONS.forEach(s =>
-      make(s.lat, s.lng, 'ymap-incheon--station', '🚉', `${s.name}역 (${s.line})`))
-    // 주차장 1,004개 전부 그리면 무거움 → 50면 이상(307개)만 마커 표시.
-    // (매장 상세 "가는 길"의 최근접 계산은 전체 1,004개 기준 — 여긴 지도 표시용 필터)
-    INCHEON_PARKING.filter(p => (p.capacity ?? 0) >= 50).forEach(p =>
-      make(p.lat, p.lng, 'ymap-incheon--parking', '🅿️', `${p.name}${p.capacity ? ` · ${p.capacity}면` : ''}${p.fee ? ` · ${p.fee}` : ''}`))
+    })
 
     // 레이어 켤 때 인천 중심으로 이동
     map.panTo(new window.kakao.maps.LatLng(37.4566, 126.7026))

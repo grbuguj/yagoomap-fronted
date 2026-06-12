@@ -9,10 +9,23 @@ const timeOf = iso => {
 }
 
 /**
- * @returns {string[]} 추천 코멘트 목록 (0~3개)
+ * @param weather {?{pop:number, pty:number, tmp:number}} 오늘 저녁 예보 (기상청 단기예보)
+ * @returns {string[]} 추천 코멘트 목록 (0~4개)
  */
-export function buildCoachTips({ venue, game, station, parking }) {
+export function buildCoachTips({ venue, game, station, parking, weather }) {
   const tips = []
+
+  // ⓪ 날씨 × 직관 전략 (기상청 단기예보)
+  if (weather) {
+    const rainy = weather.pty > 0 || (weather.pop ?? 0) >= 60
+    if (rainy && game && game.status !== 'FINISHED' && game.status !== 'CANCELED') {
+      tips.push(`오늘 저녁 비 소식(강수확률 ${weather.pop}%) — 야외 직관 대신 여기서 시원하게 중계 보는 건 어때요? ☔`)
+    } else if (rainy) {
+      tips.push(`오늘 저녁 강수확률 ${weather.pop}% — 우산 챙기세요 ☔`)
+    } else if ((weather.pop ?? 100) <= 20 && weather.tmp != null) {
+      tips.push(`오늘 저녁 ${weather.tmp}℃, 강수확률 ${weather.pop}% — 야구 보기 좋은 날씨예요 ⚾`)
+    }
+  }
   const walk = station ? walkMin(station.dist) : null
 
   // ① 경기 상황 × 교통 코스 추천
@@ -54,5 +67,5 @@ export function buildCoachTips({ venue, game, station, parking }) {
     )
   }
 
-  return tips.slice(0, 3)
+  return tips.slice(0, 4)
 }

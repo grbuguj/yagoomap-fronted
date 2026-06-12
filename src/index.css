@@ -158,3 +158,32 @@ input, textarea {
 .ymap-incheon--parking {
   border-color: #2a9d5c;
 }
+
+/* 주차장 마커 클릭 팝업 */
+.ymap-incheon--parking {
+  cursor: pointer;
+}
+
+.ymap-incheon-popup {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+  padding: 9px 12px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #374151;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.ymap-incheon-popup-title {
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+
+.ymap-incheon-popup-src {
+  margin-top: 3px;
+  font-size: 10px;
+  color: #9ca3af;
+}

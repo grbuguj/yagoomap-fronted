@@ -348,9 +348,9 @@ function App() {
           <button
             className={`incheonBtn${showIncheon ? ' incheonBtn--on' : ''}`}
             onClick={() => setShowIncheon(v => !v)}
-            title="인천 교통·주차 정보 (인천시 공공데이터)"
+            title="인천 공영주차장 (인천시 공공데이터)"
           >
-            🚉
+            🅿️
           </button>
 
           <button

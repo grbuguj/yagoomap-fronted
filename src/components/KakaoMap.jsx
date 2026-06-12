@@ -119,8 +119,10 @@ function KakaoMap({ venues, selectedTeam, selectedVenue, onVenueClick, userLocat
 
     INCHEON_STATIONS.forEach(s =>
       make(s.lat, s.lng, 'ymap-incheon--station', '🚉', `${s.name}역 (${s.line})`))
-    INCHEON_PARKING.forEach(p =>
-      make(p.lat, p.lng, 'ymap-incheon--parking', '🅿️', `${p.name}${p.capacity ? ` · ${p.capacity}면` : ''}`))
+    // 주차장 1,004개 전부 그리면 무거움 → 50면 이상(307개)만 마커 표시.
+    // (매장 상세 "가는 길"의 최근접 계산은 전체 1,004개 기준 — 여긴 지도 표시용 필터)
+    INCHEON_PARKING.filter(p => (p.capacity ?? 0) >= 50).forEach(p =>
+      make(p.lat, p.lng, 'ymap-incheon--parking', '🅿️', `${p.name}${p.capacity ? ` · ${p.capacity}면` : ''}${p.fee ? ` · ${p.fee}` : ''}`))
 
     // 레이어 켤 때 인천 중심으로 이동
     map.panTo(new window.kakao.maps.LatLng(37.4566, 126.7026))

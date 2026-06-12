@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   if (!key) return res.status(500).json({ error: 'INCHEON_BUS_API_KEY not configured' })
 
   const url =
-    'http://apis.data.go.kr/6280000/busArrivalService/getAllRouteBusArrivalList' +
+    'https://apis.data.go.kr/6280000/busArrivalService/getAllRouteBusArrivalList' +
     `?serviceKey=${key}&bstopId=${encodeURIComponent(bstopId)}&numOfRows=5&pageNo=1`
 
   try {

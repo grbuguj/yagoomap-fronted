@@ -81,12 +81,12 @@ function KakaoMap({ venues, selectedTeam, selectedVenue, onVenueClick, userLocat
       el.className = 'ymap-stadium'
       el.style.setProperty('--stadium-color', s.color)
       el.title = `${s.name} — ${s.teams}`
-      el.innerHTML = `<span class="ymap-stadium-ball">⚾</span><span class="ymap-stadium-name">${s.name}</span>`
+      el.innerHTML = `<span class="ymap-stadium-ball">⚾</span><span class="ymap-stadium-name">${s.name}</span><i class="ymap-stadium-tail"></i>`
       return new window.kakao.maps.CustomOverlay({
         map,
         position: new window.kakao.maps.LatLng(s.lat, s.lng),
         content: el,
-        yAnchor: 0.5,
+        yAnchor: 1.25, // 꼬리가 구장 좌표를 가리키도록
         xAnchor: 0.5,
         zIndex: 0,
       })
@@ -132,9 +132,8 @@ function KakaoMap({ venues, selectedTeam, selectedVenue, onVenueClick, userLocat
       buckets.get(key).push(v)
     })
 
+    // 축소 뷰에선 낱개 매장도 버블로 통일 (개별 핀이 튀지 않도록)
     buckets.forEach(group => {
-      if (group.length === 1) { addVenueMarker(group[0]); return }
-
       const lat = group.reduce((s, v) => s + v.lat, 0) / group.length
       const lng = group.reduce((s, v) => s + v.lng, 0) / group.length
       const el = document.createElement('div')

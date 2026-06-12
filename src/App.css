@@ -427,3 +427,30 @@
 }
 
 .venuesError button:hover { opacity: 0.85; }
+
+/* ── 인천 공공데이터 레이어 토글 버튼 ── */
+.incheonBtn {
+  position: absolute;
+  bottom: 138px;
+  right: 16px;
+  z-index: 10;
+  width: 42px;
+  height: 42px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 17px;
+  transition: background 0.1s, box-shadow 0.15s;
+}
+
+.incheonBtn:hover {
+  background: #f0f6ff;
+}
+
+.incheonBtn--on {
+  background: #eef4ff;
+  box-shadow: 0 0 0 2px #4c5fd5 inset, 0 2px 12px rgba(0, 0, 0, 0.15);
+}

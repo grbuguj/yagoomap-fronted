@@ -34,6 +34,7 @@ function App() {
   const [userLocation,     setUserLocation]     = useState(null)
   const [locating,         setLocating]         = useState(false)
   const [mapMoved,         setMapMoved]         = useState(false)
+  const [showIncheon,      setShowIncheon]      = useState(false) // 인천 공공데이터 레이어
   const liveBoundsRef  = useRef(null)
   const [boundsFilter, setBoundsFilter] = useState(null)
 
@@ -341,7 +342,16 @@ function App() {
             userLocation={userLocation}
             onBoundsChange={handleBoundsChange}
             sidebarOpen={sidebarOpen}
+            showIncheonLayer={showIncheon}
           />
+
+          <button
+            className={`incheonBtn${showIncheon ? ' incheonBtn--on' : ''}`}
+            onClick={() => setShowIncheon(v => !v)}
+            title="인천 교통·주차 정보 (인천시 공공데이터)"
+          >
+            🚉
+          </button>
 
           <button
             className={`locateBtn${locating ? ' locateBtn--locating' : ''}`}

@@ -1,0 +1,70 @@
+.box {
+  margin: 10px 0 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--clr-border, #e5e7eb);
+  border-radius: 10px;
+  background: var(--clr-bg-soft, #fafafa);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.title {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.source {
+  font-size: 10px;
+  color: var(--clr-text-sub, #9ca3af);
+}
+
+.row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.icon {
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.text {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--clr-text, #374151);
+}
+
+.text b {
+  font-weight: 600;
+}
+
+.coach {
+  margin-top: 4px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #eef4ff, #f5f0ff);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.coachTitle {
+  font-size: 11px;
+  font-weight: 700;
+  color: #4c5fd5;
+}
+
+.coachTip {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  color: #374151;
+}

@@ -5,6 +5,7 @@ import { fetchImages } from '../api/venueApi'
 import { sendEvent, EVENT } from '../api/events'
 import ReviewSection from './ReviewSection'
 import FavoriteButton from './FavoriteButton'
+import IncheonTransit from './IncheonTransit'
 import styles from './VenueDetail.module.css'
 
 // 외부 이미지(블로그/뉴스 등)는 403·mixed-content·인증서오류로 자주 깨짐.
@@ -328,6 +329,9 @@ function VenueDetail({ venue, todayGame, onClose, onCloseAll }) {
             </span>
           )}
         </div>
+
+        {/* 3.5 인천 매장 전용: 가는 길 + AI 직관 도우미 (인천시 공공데이터) */}
+        <IncheonTransit venue={venue} game={todayGame} />
 
         {/* 4. 중계 확인 안내 — 항상 표시 */}
         <p className={styles.notice}>

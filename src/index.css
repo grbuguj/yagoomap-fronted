@@ -139,3 +139,22 @@ input, textarea {
   0%   { transform: scale(0.5); opacity: 0.9; }
   100% { transform: scale(2);   opacity: 0;   }
 }
+
+/* ── 인천 공공데이터 레이어 마커 (KakaoMap) ─────────────── */
+.ymap-incheon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid #4c5fd5;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.2);
+  font-size: 13px;
+  cursor: default;
+}
+
+.ymap-incheon--parking {
+  border-color: #2a9d5c;
+}

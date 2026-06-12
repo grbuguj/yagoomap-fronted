@@ -1,5 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { TEAM_CONFIG, MIXED_COLOR } from '../data/teams'
+import { INCHEON_STATIONS } from '../data/incheonStations'
+import { INCHEON_PARKING } from '../data/incheonParking'
 import styles from './KakaoMap.module.css'
 
 // 레이블에 표시할 가게 이름 (너무 길면 자름)
@@ -27,10 +29,11 @@ function createMarkerContent(venue) {
   return div
 }
 
-function KakaoMap({ venues, selectedTeam, selectedVenue, onVenueClick, userLocation, onBoundsChange, sidebarOpen }) {
+function KakaoMap({ venues, selectedTeam, selectedVenue, onVenueClick, userLocation, onBoundsChange, sidebarOpen, showIncheonLayer }) {
   const mapRef              = useRef(null)
   const mapInstance         = useRef(null)
   const overlaysRef         = useRef([])  // [{ overlay, content, venueId }]
+  const incheonOverlaysRef  = useRef([])  // 인천 공공데이터 레이어 (역/주차장)
   const myLocOverlay        = useRef(null)
   const onBoundsChangeCb    = useRef(onBoundsChange)
 
@@ -87,6 +90,42 @@ function KakaoMap({ venues, selectedTeam, selectedVenue, onVenueClick, userLocat
       overlaysRef.current.push({ overlay, content, venueId: venue.id })
     })
   }, [venues, onVenueClick])
+
+  /* ── 인천 공공데이터 레이어 (도시철도역 + 공영주차장) ───── */
+  useEffect(() => {
+    const map = mapInstance.current
+    if (!map) return
+
+    // 기존 레이어 제거
+    incheonOverlaysRef.current.forEach(o => o.setMap(null))
+    incheonOverlaysRef.current = []
+    if (!showIncheonLayer) return
+
+    const make = (lat, lng, cls, emoji, title) => {
+      const el = document.createElement('div')
+      el.className = `ymap-incheon ${cls}`
+      el.title = title
+      el.textContent = emoji
+      const overlay = new window.kakao.maps.CustomOverlay({
+        map,
+        position: new window.kakao.maps.LatLng(lat, lng),
+        content: el,
+        yAnchor: 0.5,
+        xAnchor: 0.5,
+        zIndex: 2,
+      })
+      incheonOverlaysRef.current.push(overlay)
+    }
+
+    INCHEON_STATIONS.forEach(s =>
+      make(s.lat, s.lng, 'ymap-incheon--station', '🚉', `${s.name}역 (${s.line})`))
+    INCHEON_PARKING.forEach(p =>
+      make(p.lat, p.lng, 'ymap-incheon--parking', '🅿️', `${p.name}${p.capacity ? ` · ${p.capacity}면` : ''}`))
+
+    // 레이어 켤 때 인천 중심으로 이동
+    map.panTo(new window.kakao.maps.LatLng(37.4566, 126.7026))
+    if (map.getLevel() > 7) map.setLevel(7)
+  }, [showIncheonLayer])
 
   /* ── active 상태만 클래스 교체 (DOM 직접 수정) ──────────── */
   useEffect(() => {

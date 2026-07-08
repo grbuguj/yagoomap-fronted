@@ -1062,10 +1062,14 @@ const TYPE_LABEL = {
 }
 
 const RANGE_OPTIONS = [
-  { days: 1,  label: '오늘' },
-  { days: 7,  label: '7일' },
-  { days: 14, label: '14일' },
-  { days: 30, label: '30일' },
+  { days: 1,   label: '오늘' },
+  { days: 7,   label: '7일' },
+  { days: 14,  label: '14일' },
+  { days: 30,  label: '30일' },
+  { days: 60,  label: '60일' },
+  { days: 90,  label: '90일' },
+  { days: 180, label: '180일' },
+  { days: 365, label: '365일' },
 ]
 
 /* 가로 막대 한 줄 (차트 라이브러리 없이 div 로 표현) */
